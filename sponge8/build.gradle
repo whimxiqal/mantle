@@ -1,0 +1,29 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'java'
+}
+
+dependencies {
+    implementation project(':common')
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+
+    // https://mvnrepository.com/artifact/org.spongepowered/spongeapi
+    compileOnly 'org.spongepowered:spongeapi:8.0.0'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+shadowJar {
+
+    dependencies {
+        include(dependency('me.pietelite.mantle:.*'))
+        include(dependency('com.vmware.antlr4-c3:.*'))
+    }
+
+    relocate 'com.vmware.antlr4c3', 'me.pietelite.mantle.lib.antlr4c3'
+
+}

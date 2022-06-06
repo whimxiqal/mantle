@@ -1,0 +1,16 @@
+subprojects {
+    apply plugin: 'java'
+
+    group = 'me.pietelite.mantle'
+    version '1.0-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+    }
+
+}
+
+tasks.register("mantleBuild") {
+    dependsOn "common:test"
+    dependsOn "sponge8:shadowJar"
+}

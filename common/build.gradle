@@ -1,0 +1,26 @@
+plugins {
+    id 'antlr'
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+
+    // https://mvnrepository.com/artifact/org.antlr/antlr
+    antlr 'org.antlr:antlr4:4.10.1'
+
+    // https://mvnrepository.com/artifact/net.kyori/adventure-api
+    implementation 'net.kyori:adventure-api:4.11.0'
+
+    // https://mvnrepository.com/artifact/com.vmware.antlr4-c3/antlr4-c3
+    api 'com.vmware.antlr4-c3:antlr4-c3:1.1'
+
+}
+
+test {
+    useJUnitPlatform()
+}
+
+generateTestGrammarSource {
+    arguments += ["-visitor", "-lib", "src/test/antlr/me/pietelite/mantle/common"]
+}
