@@ -1,11 +1,8 @@
 grammar Crust;
-@header {
-package me.pietelite.mantle.common;
-}
 
 // crust
-crust: (register | unregister | player);
-register: REGISTER identifier;
+crust: CRUST (register | unregister | player);
+register: REGISTER user=identifier color=identifier?;
 unregister: UNREGISTER identifier;
 player: PLAYER identifier (playerInfo | playerEdit);
 playerInfo: INFO;
@@ -13,6 +10,7 @@ playerEdit: EDIT (playerEditNickname);
 playerEditNickname: NICKNAME identifier;
 
 // tokens
+CRUST: 'crust';
 REGISTER: 'register';
 UNREGISTER: 'unregister';
 PLAYER: 'player';

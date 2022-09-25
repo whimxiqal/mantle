@@ -1,4 +1,5 @@
 plugins {
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
     id 'antlr'
 }
 
@@ -11,6 +12,7 @@ dependencies {
 
     // https://mvnrepository.com/artifact/net.kyori/adventure-api
     implementation 'net.kyori:adventure-api:4.11.0'
+    implementation 'net.kyori:adventure-text-serializer-plain:4.11.0'
 
     // https://mvnrepository.com/artifact/com.vmware.antlr4-c3/antlr4-c3
     api 'com.vmware.antlr4-c3:antlr4-c3:1.1'
@@ -22,5 +24,20 @@ test {
 }
 
 generateTestGrammarSource {
-    arguments += ["-visitor", "-lib", "src/test/antlr/me/pietelite/mantle/common"]
+    arguments += ["-visitor", "-lib", "src/test/antlr/me/pietelite/mantle/common", "-package", "me.pietelite.mantle.common"]
+}
+
+shadowJar {
+
+    dependencies {
+        include(dependency('me.pietelite.mantle:.*'))
+        include(dependency('com.vmware.antlr4-c3:.*'))
+    }
+
+    relocate 'com.vmware.antlr4c3', 'me.pietelite.mantle.lib.antlr4c3'
+
+}
+
+build {
+    finalizedBy "shadowJar"
 }

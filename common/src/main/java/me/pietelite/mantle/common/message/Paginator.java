@@ -22,47 +22,14 @@
  * SOFTWARE.
  */
 
-package me.pietelite.mantle.common;
+package me.pietelite.mantle.common.message;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+public class Paginator {
 
-public class CrustPlatformProxy implements Proxy {
-
-  public static final List<String> PLAYERS = new LinkedList<>();
-
-  {
-    PLAYERS.add("PietElite");
-    PLAYERS.add("belkar1");
+  /**
+   * Send to the current {@link me.pietelite.mantle.common.CommandSource}.
+   */
+  public void send() {
   }
 
-
-  @Override
-  public Logger logger() {
-    return new TestLogger();
-  }
-
-  @Override
-  public UUID playerUuid(String playerName) {
-    return UUID.nameUUIDFromBytes(playerName.getBytes(StandardCharsets.UTF_8));
-  }
-
-  @Override
-  public boolean hasPermission(UUID playerUuid, String permission) {
-    return !CrustPlugin.instance.playerRestrictedPermissions.containsKey(playerUuid) ||
-        !CrustPlugin.instance.playerRestrictedPermissions.get(playerUuid).contains(permission);
-  }
-
-  @Override
-  public List<String> onlinePlayerNames() {
-    return PLAYERS;
-  }
-
-  @Override
-  public List<String> worldNames() {
-    return Collections.emptyList();
-  }
 }

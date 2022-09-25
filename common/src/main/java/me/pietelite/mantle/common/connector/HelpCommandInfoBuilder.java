@@ -22,39 +22,46 @@
  * SOFTWARE.
  */
 
-package me.pietelite.mantle.common;
+package me.pietelite.mantle.common.connector;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
-import me.pietelite.mantle.common.connector.CommandConnector;
+import net.kyori.adventure.text.Component;
 
-public class CrustPlugin {
+public class HelpCommandInfoBuilder {
 
-  public static CrustPlugin instance;
-  private final Map<String, MantleCommand> commands = new HashMap<>();
-  public final Set<String> players = new HashSet<>();
-  public final Map<UUID, Set<String>> playerRestrictedPermissions = new HashMap<>();
+  private static final Component DEFAULT_HEADER = Component.text("Command Information...");
+  private final Map<Integer, Component> descriptions = new HashMap<>();
+  private final Set<Integer> ignored = new HashSet<>();
+  private Component header;
 
-  public void registerCommand(String alias, CommandConnector command) {
-    commands.put(alias, new MantleCommand(command));
+  public HelpCommandInfo build() {
+    if (header == null) {
+      header = DEFAULT_HEADER;
+    }
+    return new HelpCommandInfoImpl(header,
+        descriptions,
+        ignored);
   }
 
-  public boolean executeCommand(CommandSource source, String command) {
-    String[] tokens = command.split(" ", 2);
-    return commands.get(tokens[0]).process(source, tokens.length < 2 ? "" : tokens[1]);
+  public HelpCommandInfoBuilder setHeader(Component header) {
+    this.header = header;
+    return this;
   }
 
-  public List<String> completeCommand(CommandSource source, String command) {
-    String[] tokens = command.split(" ", 2);
-    return commands.get(tokens[0]).complete(source, tokens.length < 2 ? "" : tokens[1]);
+  public HelpCommandInfoBuilder addDescription(int rule, Component description) {
+    if (descriptions.putIfAbsent(rule, description) != null) {
+      throw new IllegalArgumentException("A description for rule " + rule + " has already been added.");
+    }
+    return this;
   }
 
-  public void revokePermission(UUID playerUuid, String permission) {
-    this.playerRestrictedPermissions.computeIfAbsent(playerUuid, k -> new HashSet<>()).add(permission);
+  public HelpCommandInfoBuilder addIgnored(int rule) {
+    if (!ignored.add(rule)) {
+      throw new IllegalArgumentException("The rule " + rule + " is already ignored.");
+    }
+    return this;
   }
-
 }

@@ -17,13 +17,4 @@ test {
     useJUnitPlatform()
 }
 
-shadowJar {
-
-    dependencies {
-        include(dependency('me.pietelite.mantle:.*'))
-        include(dependency('com.vmware.antlr4-c3:.*'))
-    }
-
-    relocate 'com.vmware.antlr4c3', 'me.pietelite.mantle.lib.antlr4c3'
-
-}
+jar.enabled = true

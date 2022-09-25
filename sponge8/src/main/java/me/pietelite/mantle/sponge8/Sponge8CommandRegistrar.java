@@ -22,47 +22,36 @@
  * SOFTWARE.
  */
 
-package me.pietelite.mantle.common;
+package me.pietelite.mantle.sponge8;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
+import me.pietelite.mantle.common.CommandRegistrar;
+import me.pietelite.mantle.common.connector.CommandConnector;
+import org.spongepowered.api.command.Command;
+import org.spongepowered.api.event.lifecycle.RegisterCommandEvent;
+import org.spongepowered.plugin.PluginContainer;
 
-public class CrustPlatformProxy implements Proxy {
+class Sponge8CommandRegistrar implements CommandRegistrar {
 
-  public static final List<String> PLAYERS = new LinkedList<>();
+  private final PluginContainer pluginContainer;
+  private final RegisterCommandEvent<Command.Raw> rawRegisterCommandEvent;
 
-  {
-    PLAYERS.add("PietElite");
-    PLAYERS.add("belkar1");
-  }
-
-
-  @Override
-  public Logger logger() {
-    return new TestLogger();
-  }
-
-  @Override
-  public UUID playerUuid(String playerName) {
-    return UUID.nameUUIDFromBytes(playerName.getBytes(StandardCharsets.UTF_8));
+  public Sponge8CommandRegistrar(PluginContainer pluginContainer, RegisterCommandEvent<Command.Raw> rawRegisterCommandEvent) {
+    this.pluginContainer = pluginContainer;
+    this.rawRegisterCommandEvent = rawRegisterCommandEvent;
   }
 
   @Override
-  public boolean hasPermission(UUID playerUuid, String permission) {
-    return !CrustPlugin.instance.playerRestrictedPermissions.containsKey(playerUuid) ||
-        !CrustPlugin.instance.playerRestrictedPermissions.get(playerUuid).contains(permission);
+  public void register(CommandConnector connector) {
+    Sponge8MantleCommand command = new Sponge8MantleCommand(connector);
+    List<String> aliases = command.getConnector().aliases();
+    String[] otherAliases = new String[0];
+    if (aliases != null) {
+      otherAliases = aliases.toArray(otherAliases);
+    }
+    rawRegisterCommandEvent.register(pluginContainer, command,
+        command.getConnector().baseCommand(),
+        otherAliases);
   }
 
-  @Override
-  public List<String> onlinePlayerNames() {
-    return PLAYERS;
-  }
-
-  @Override
-  public List<String> worldNames() {
-    return Collections.emptyList();
-  }
 }

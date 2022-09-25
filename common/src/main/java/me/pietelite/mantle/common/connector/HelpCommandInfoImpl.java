@@ -22,47 +22,38 @@
  * SOFTWARE.
  */
 
-package me.pietelite.mantle.common;
+package me.pietelite.mantle.common.connector;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+import java.util.Map;
+import java.util.Set;
+import net.kyori.adventure.text.Component;
 
-public class CrustPlatformProxy implements Proxy {
+class HelpCommandInfoImpl implements HelpCommandInfo {
 
-  public static final List<String> PLAYERS = new LinkedList<>();
+  private final Component header;
+  private final Map<Integer, Component> descriptions;
+  private final Set<Integer> ignored;
 
-  {
-    PLAYERS.add("PietElite");
-    PLAYERS.add("belkar1");
-  }
-
-
-  @Override
-  public Logger logger() {
-    return new TestLogger();
+  public HelpCommandInfoImpl(Component header,
+                             Map<Integer, Component> descriptions,
+                             Set<Integer> ignored) {
+    this.header = header;
+    this.descriptions = descriptions;
+    this.ignored = ignored;
   }
 
   @Override
-  public UUID playerUuid(String playerName) {
-    return UUID.nameUUIDFromBytes(playerName.getBytes(StandardCharsets.UTF_8));
+  public Component header() {
+    return header;
   }
 
   @Override
-  public boolean hasPermission(UUID playerUuid, String permission) {
-    return !CrustPlugin.instance.playerRestrictedPermissions.containsKey(playerUuid) ||
-        !CrustPlugin.instance.playerRestrictedPermissions.get(playerUuid).contains(permission);
+  public Map<Integer, Component> descriptions() {
+    return descriptions;
   }
 
   @Override
-  public List<String> onlinePlayerNames() {
-    return PLAYERS;
-  }
-
-  @Override
-  public List<String> worldNames() {
-    return Collections.emptyList();
+  public Set<Integer> ignored() {
+    return ignored;
   }
 }

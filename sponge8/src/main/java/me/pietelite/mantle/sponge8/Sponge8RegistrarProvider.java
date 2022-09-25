@@ -22,47 +22,19 @@
  * SOFTWARE.
  */
 
-package me.pietelite.mantle.common;
+package me.pietelite.mantle.sponge8;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+import me.pietelite.mantle.common.CommandRegistrar;
+import me.pietelite.mantle.common.Mantle;
+import org.spongepowered.api.command.Command;
+import org.spongepowered.api.event.lifecycle.RegisterCommandEvent;
+import org.spongepowered.plugin.PluginContainer;
 
-public class CrustPlatformProxy implements Proxy {
+public class Sponge8RegistrarProvider {
 
-  public static final List<String> PLAYERS = new LinkedList<>();
-
-  {
-    PLAYERS.add("PietElite");
-    PLAYERS.add("belkar1");
+  public static CommandRegistrar get(PluginContainer pluginContainer, RegisterCommandEvent<Command.Raw> rawRegisterCommandEvent) {
+    Mantle.setProxy(new Sponge8Proxy());
+    return new Sponge8CommandRegistrar(pluginContainer, rawRegisterCommandEvent);
   }
 
-
-  @Override
-  public Logger logger() {
-    return new TestLogger();
-  }
-
-  @Override
-  public UUID playerUuid(String playerName) {
-    return UUID.nameUUIDFromBytes(playerName.getBytes(StandardCharsets.UTF_8));
-  }
-
-  @Override
-  public boolean hasPermission(UUID playerUuid, String permission) {
-    return !CrustPlugin.instance.playerRestrictedPermissions.containsKey(playerUuid) ||
-        !CrustPlugin.instance.playerRestrictedPermissions.get(playerUuid).contains(permission);
-  }
-
-  @Override
-  public List<String> onlinePlayerNames() {
-    return PLAYERS;
-  }
-
-  @Override
-  public List<String> worldNames() {
-    return Collections.emptyList();
-  }
 }

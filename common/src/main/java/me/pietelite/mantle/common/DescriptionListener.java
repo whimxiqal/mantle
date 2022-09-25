@@ -24,45 +24,55 @@
 
 package me.pietelite.mantle.common;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+import java.util.Optional;
+import java.util.Stack;
+import me.pietelite.mantle.common.connector.HelpCommandInfo;
+import net.kyori.adventure.text.Component;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.ParseTreeListener;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
-public class CrustPlatformProxy implements Proxy {
+public class DescriptionListener implements ParseTreeListener {
 
-  public static final List<String> PLAYERS = new LinkedList<>();
+  private final HelpCommandInfo info;
+  private final Stack<Integer> ruleStack = new Stack<>();
 
-  {
-    PLAYERS.add("PietElite");
-    PLAYERS.add("belkar1");
-  }
-
-
-  @Override
-  public Logger logger() {
-    return new TestLogger();
+  public DescriptionListener(HelpCommandInfo info) {
+    this.info = info;
   }
 
   @Override
-  public UUID playerUuid(String playerName) {
-    return UUID.nameUUIDFromBytes(playerName.getBytes(StandardCharsets.UTF_8));
+  public void visitTerminal(TerminalNode node) {
+    // ignore
   }
 
   @Override
-  public boolean hasPermission(UUID playerUuid, String permission) {
-    return !CrustPlugin.instance.playerRestrictedPermissions.containsKey(playerUuid) ||
-        !CrustPlugin.instance.playerRestrictedPermissions.get(playerUuid).contains(permission);
+  public void visitErrorNode(ErrorNode node) {
+    // ignore
   }
 
   @Override
-  public List<String> onlinePlayerNames() {
-    return PLAYERS;
+  public void enterEveryRule(ParserRuleContext ctx) {
+    if (ctx == null) {
+      return;
+    }
+    ruleStack.push(ctx.getRuleIndex());
   }
 
   @Override
-  public List<String> worldNames() {
-    return Collections.emptyList();
+  public void exitEveryRule(ParserRuleContext ctx) {
+    // ignore
+  }
+
+  Optional<Component> description() {
+    while (!ruleStack.isEmpty()) {
+      int rule = ruleStack.pop();
+      if (info.ignored().contains(rule)) {
+        continue;
+      }
+      return Optional.ofNullable(info.descriptions().get(rule));
+    }
+    return Optional.empty();
   }
 }

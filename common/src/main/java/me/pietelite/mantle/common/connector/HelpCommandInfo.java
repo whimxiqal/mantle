@@ -22,47 +22,22 @@
  * SOFTWARE.
  */
 
-package me.pietelite.mantle.common;
+package me.pietelite.mantle.common.connector;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+import java.util.Map;
+import java.util.Set;
+import net.kyori.adventure.text.Component;
 
-public class CrustPlatformProxy implements Proxy {
+public interface HelpCommandInfo {
 
-  public static final List<String> PLAYERS = new LinkedList<>();
-
-  {
-    PLAYERS.add("PietElite");
-    PLAYERS.add("belkar1");
+  static HelpCommandInfoBuilder builder() {
+    return new HelpCommandInfoBuilder();
   }
 
+  Component header();
 
-  @Override
-  public Logger logger() {
-    return new TestLogger();
-  }
+  Map<Integer, Component> descriptions();
 
-  @Override
-  public UUID playerUuid(String playerName) {
-    return UUID.nameUUIDFromBytes(playerName.getBytes(StandardCharsets.UTF_8));
-  }
+  Set<Integer> ignored();
 
-  @Override
-  public boolean hasPermission(UUID playerUuid, String permission) {
-    return !CrustPlugin.instance.playerRestrictedPermissions.containsKey(playerUuid) ||
-        !CrustPlugin.instance.playerRestrictedPermissions.get(playerUuid).contains(permission);
-  }
-
-  @Override
-  public List<String> onlinePlayerNames() {
-    return PLAYERS;
-  }
-
-  @Override
-  public List<String> worldNames() {
-    return Collections.emptyList();
-  }
 }

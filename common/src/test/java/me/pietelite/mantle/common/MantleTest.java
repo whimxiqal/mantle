@@ -1,22 +1,93 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) Pieter Svenson
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package me.pietelite.mantle.common;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import me.pietelite.mantle.common.connector.CommandConnector;
+import me.pietelite.mantle.common.connector.CompletionInfo;
+import me.pietelite.mantle.common.connector.HelpCommandInfo;
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static me.pietelite.mantle.common.CrustParser.RULE_crust;
+import static me.pietelite.mantle.common.CrustParser.RULE_identifier;
+import static me.pietelite.mantle.common.CrustParser.RULE_player;
+import static me.pietelite.mantle.common.CrustParser.RULE_playerEdit;
+import static me.pietelite.mantle.common.CrustParser.RULE_playerEditNickname;
+import static me.pietelite.mantle.common.CrustParser.RULE_playerInfo;
+import static me.pietelite.mantle.common.CrustParser.RULE_register;
+import static me.pietelite.mantle.common.CrustParser.RULE_unregister;
 
 public class MantleTest {
+
+  private static final List<String> COLORS = new LinkedList<>();
+
+  {
+    COLORS.add("blue");
+    COLORS.add("green");
+    COLORS.add("red");
+  }
 
   @BeforeAll
   static void setUpAll() {
     Mantle.setProxy(new CrustPlatformProxy());
     CrustPlugin.instance = new CrustPlugin();
-    CrustPlatformConnector command = new CrustPlatformConnector();
-    command.registerTo(CrustPlugin.instance);
+    CrustPlugin.instance.registerCommand("crust",
+        CommandConnector.builder().setBaseCommand("crust")
+            .setLexerClass(CrustLexer.class)
+            .setParserClass(CrustParser.class)
+            .setExecutionHandler(CrustCommandExecutor::new)
+            .setHelpCommandInfo(HelpCommandInfo.builder()
+                .addDescription(RULE_crust, Component.text("Basic crust command"))
+                .addDescription(RULE_register, Component.text("Register a player for a thing"))
+                .addDescription(RULE_unregister, Component.text("Unregister a registered player"))
+                .addDescription(RULE_player, Component.text("Edit or see information about a player"))
+                .addDescription(RULE_playerInfo, Component.text("Lookup information about a player"))
+                .addDescription(RULE_playerEdit, Component.text("Edit information about a player"))
+                .addDescription(RULE_playerEditNickname, Component.text("Edit the nickname of a player"))
+                .addIgnored(RULE_identifier)
+                .build())
+            .addPermission(RULE_register, "crust.register")
+            .addPermission(RULE_unregister, "crust.unregister")
+            .addPermission(RULE_player, "crust.player")
+            .addPermission(RULE_playerEdit, "crust.player.edit")
+            .setCompletionInfo(CompletionInfo.builder()
+                .addParameter("color", COLORS)
+                .registerCompletion(RULE_player, RULE_identifier, 0, "player")
+                .registerCompletion(RULE_register, RULE_identifier, 0, "player")
+                .registerCompletion(RULE_register, RULE_identifier, 1, "color")
+                .addIgnoredCompletionToken(CrustLexer.SINGLE_QUOTE)
+                .addIgnoredCompletionToken(CrustLexer.DOUBLE_QUOTE)
+                .build())
+            .build());
   }
 
   @BeforeEach
@@ -50,6 +121,20 @@ public class MantleTest {
     Assertions.assertEquals(1, completions.size());
     Assertions.assertTrue(completions.contains("player"));
 
+    completions = instance().completeCommand(source, "crust player ");
+    Assertions.assertEquals(CrustPlatformProxy.PLAYERS.size(), completions.size());
+    for (String player : CrustPlatformProxy.PLAYERS) {
+      Assertions.assertTrue(completions.contains(player));
+    }
+
+    completions = instance().completeCommand(source, "crust player p");
+    Assertions.assertEquals(1, completions.size());
+    Assertions.assertTrue(completions.contains("PietElite"));
+
+    completions = instance().completeCommand(source, "crust player P");
+    Assertions.assertEquals(1, completions.size());
+    Assertions.assertTrue(completions.contains("PietElite"));
+
     completions = instance().completeCommand(source, "crust player golem ");
     Assertions.assertEquals(2, completions.size());
     Assertions.assertTrue(completions.contains("info"));
@@ -57,6 +142,12 @@ public class MantleTest {
 
     completions = instance().completeCommand(source, "crust z");
     Assertions.assertEquals(0, completions.size());
+
+    completions = instance().completeCommand(source, "crust register tornado ");
+    Assertions.assertEquals(COLORS.size(), completions.size());
+    for (String color : COLORS) {
+      Assertions.assertTrue(completions.contains(color));
+    }
   }
 
   @Test
@@ -121,6 +212,24 @@ public class MantleTest {
     Assertions.assertTrue(instance().executeCommand(source, "crust player ares edit nickname mars"));
     CrustPlugin.instance.revokePermission(playerUuid, "crust.player");
     Assertions.assertFalse(instance().executeCommand(source, "crust player ares edit nickname mars"));
+  }
+
+  @Test
+  void helpCommand() {
+    UUID playerUuid = UUID.randomUUID();
+    TestAudience audience = new TestAudience();
+    CommandSource source = new CommandSource(CommandSource.Type.PLAYER, playerUuid, audience);
+    Assertions.assertTrue(instance().executeCommand(source, "crust player ?"));
+    Assertions.assertTrue(audience.hasSentMessage());
+  }
+
+  @Test
+  void sendMessageToTestAudience() {
+    TestAudience audience = new TestAudience();
+
+    Assertions.assertFalse(audience.hasSentMessage());
+    audience.sendMessage(Component.text("this is a message"));
+    Assertions.assertTrue(audience.hasSentMessage());
   }
 
 }
