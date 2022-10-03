@@ -27,10 +27,15 @@ package me.pietelite.mantle.common.connector;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
+import me.pietelite.mantle.common.CommandExecutor;
 import me.pietelite.mantle.common.Mantle;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Lexer;
@@ -42,30 +47,27 @@ import org.jetbrains.annotations.Nullable;
 
 class CommandConnectorImpl implements CommandConnector {
 
-  private final String baseCommand;
-  private final List<String> aliases;
+  private final Collection<CommandRoot> roots;
   private final Class<? extends Lexer> lexerClass;
   private final Class<? extends Parser> parserClass;
-  private final Supplier<ParseTreeVisitor<Boolean>> executionHandler;
+  private final CommandExecutor executor;
   private final HelpCommandInfo helpCommandInfo;
   private final Map<Integer, String> rulePermissions;
   private final CompletionInfo completionInfo;
   private final boolean useDefaultParseError;
 
-  CommandConnectorImpl(String baseCommand,
-                       List<String> aliases,
+  CommandConnectorImpl(Collection<CommandRoot> roots,
                        Class<? extends Lexer> lexerClass,
                        Class<? extends Parser> parserClass,
-                       Supplier<ParseTreeVisitor<Boolean>> executionHandler,
+                       CommandExecutor executor,
                        HelpCommandInfo helpCommandInfo,
                        Map<Integer, String> rulePermissions,
                        CompletionInfo completionInfo,
                        boolean useDefaultParseError) {
-    this.baseCommand = baseCommand;
-    this.aliases = aliases;
+    this.roots = Collections.unmodifiableCollection(roots);
     this.lexerClass = lexerClass;
     this.parserClass = parserClass;
-    this.executionHandler = executionHandler;
+    this.executor = executor;
     this.helpCommandInfo = helpCommandInfo;
     this.rulePermissions = rulePermissions;
     this.completionInfo = completionInfo;
@@ -129,10 +131,10 @@ class CommandConnectorImpl implements CommandConnector {
   }
 
   @Override
-  public ParserRuleContext getBaseContext(Parser parser) {
+  public ParserRuleContext baseContext(Parser parser, CommandRoot root) {
     Method parserRuleContextMethod;
     try {
-      parserRuleContextMethod = parserClass.getDeclaredMethod(baseCommand);
+      parserRuleContextMethod = parserClass.getDeclaredMethod(root.baseCommand());
     } catch (NoSuchMethodException e) {
       Mantle.getProxy().logger().error("The parser class does not have the required constructor: "
           + parserClass.getSimpleName());
@@ -145,7 +147,7 @@ class CommandConnectorImpl implements CommandConnector {
       Mantle.getProxy().logger().error("The required parser class' base command is not accessible: "
           + parserClass.getSimpleName()
           + ", "
-          + baseCommand
+          + root.baseCommand()
           + "()");
       throw new InvalidCommandConnector();
     } catch (InvocationTargetException e) {
@@ -157,7 +159,7 @@ class CommandConnectorImpl implements CommandConnector {
       Mantle.getProxy().logger().error("The required parser class' base command did not return a ParseTree: "
           + parserClass.getSimpleName()
           + ", "
-          + baseCommand
+          + root.baseCommand()
           + "()");
       throw new InvalidCommandConnector();
     }
@@ -165,18 +167,13 @@ class CommandConnectorImpl implements CommandConnector {
   }
 
   @Override
-  public String baseCommand() {
-    return baseCommand;
+  public Collection<CommandRoot> roots() {
+    return roots;
   }
 
   @Override
-  public List<String> aliases() {
-    return aliases;
-  }
-
-  @Override
-  public ParseTreeVisitor<Boolean> executor() {
-    return executionHandler.get();
+  public CommandExecutor executor() {
+    return executor;
   }
 
   @Override

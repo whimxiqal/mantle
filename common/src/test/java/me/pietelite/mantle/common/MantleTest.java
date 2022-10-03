@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import me.pietelite.mantle.common.connector.CommandConnector;
+import me.pietelite.mantle.common.connector.CommandRoot;
 import me.pietelite.mantle.common.connector.CompletionInfo;
 import me.pietelite.mantle.common.connector.HelpCommandInfo;
 import net.kyori.adventure.audience.Audience;
@@ -60,12 +61,41 @@ public class MantleTest {
   static void setUpAll() {
     Mantle.setProxy(new CrustPlatformProxy());
     CrustPlugin.instance = new CrustPlugin();
-    CrustPlugin.instance.registerCommand("crust",
-        CommandConnector.builder().setBaseCommand("crust")
-            .setLexerClass(CrustLexer.class)
-            .setParserClass(CrustParser.class)
-            .setExecutionHandler(CrustCommandExecutor::new)
-            .setHelpCommandInfo(HelpCommandInfo.builder()
+    CrustPlugin.instance.registerCommand(CommandConnector.builder().addRoot(CommandRoot.builder("crust").build())
+            .lexer(CrustLexer.class)
+            .parser(CrustParser.class)
+            .executor(source -> new CrustBaseVisitor<CommandResult>() {
+              @Override
+              public CommandResult visitRegister(CrustParser.RegisterContext ctx) {
+                String playerName = ctx.user.getText();
+                boolean added = CrustPlugin.instance.players.add(playerName);
+                if (added) {
+                  source.audience().sendMessage(Component.text("The player was added"));
+                  return CommandResult.success();
+                } else {
+                  source.audience().sendMessage(Component.text("A player already exists with that name"));
+                  return CommandResult.failure();
+                }
+              }
+
+              @Override
+              public CommandResult visitUnregister(CrustParser.UnregisterContext ctx) {
+                boolean removed = CrustPlugin.instance.players.remove(ctx.identifier().getText());
+                if (removed) {
+                  source.audience().sendMessage(Component.text("The player was removed"));
+                  return CommandResult.success();
+                } else {
+                  source.audience().sendMessage(Component.text("The player could not be removed"));
+                  return CommandResult.failure();
+                }
+              }
+
+              @Override
+              public CommandResult visitPlayerEditNickname(CrustParser.PlayerEditNicknameContext ctx) {
+                return CommandResult.success();
+              }
+            })
+            .helpInfo(HelpCommandInfo.builder()
                 .addDescription(RULE_crust, Component.text("Basic crust command"))
                 .addDescription(RULE_register, Component.text("Register a player for a thing"))
                 .addDescription(RULE_unregister, Component.text("Unregister a registered player"))
@@ -79,7 +109,7 @@ public class MantleTest {
             .addPermission(RULE_unregister, "crust.unregister")
             .addPermission(RULE_player, "crust.player")
             .addPermission(RULE_playerEdit, "crust.player.edit")
-            .setCompletionInfo(CompletionInfo.builder()
+            .completionInfo(CompletionInfo.builder()
                 .addParameter("color", COLORS)
                 .registerCompletion(RULE_player, RULE_identifier, 0, "player")
                 .registerCompletion(RULE_register, RULE_identifier, 0, "player")
@@ -98,6 +128,14 @@ public class MantleTest {
 
   CrustPlugin instance() {
     return CrustPlugin.instance;
+  }
+
+  void assertSuccess(CommandResult result) {
+    Assertions.assertEquals(result.type(), CommandResult.Type.SUCCESS);
+  }
+
+  void assertFailure(CommandResult result) {
+    Assertions.assertEquals(result.type(), CommandResult.Type.FAILURE);
   }
 
   @Test
@@ -171,13 +209,13 @@ public class MantleTest {
     CommandSource source = new CommandSource(CommandSource.Type.CONSOLE, null, Audience.empty());
     Set<String> players = CrustPlugin.instance.players;
     Assertions.assertEquals(0, players.size());
-    Assertions.assertTrue(instance().executeCommand(source, "crust register apollo"));
+    assertSuccess(instance().executeCommand(source, "crust register apollo"));
     Assertions.assertEquals(1, players.size());
     Assertions.assertTrue(players.contains("apollo"));
-    Assertions.assertFalse(instance().executeCommand(source, "crust register apollo"));
+    assertFailure(instance().executeCommand(source, "crust register apollo"));
     Assertions.assertEquals(1, players.size());
     Assertions.assertTrue(players.contains("apollo"));
-    Assertions.assertTrue(instance().executeCommand(source, "crust register zeus"));
+    assertSuccess(instance().executeCommand(source, "crust register zeus"));
     Assertions.assertEquals(2, players.size());
     Assertions.assertTrue(players.contains("zeus"));
   }
@@ -187,31 +225,31 @@ public class MantleTest {
     UUID playerUuid = UUID.randomUUID();
     CommandSource source = new CommandSource(CommandSource.Type.PLAYER, playerUuid, Audience.empty());
     Set<String> hosts = CrustPlugin.instance.players;
-    Assertions.assertTrue(instance().executeCommand(source, "crust register ares"));
-    Assertions.assertTrue(instance().executeCommand(source, "crust register hermes"));
+    assertSuccess(instance().executeCommand(source, "crust register ares"));
+    assertSuccess(instance().executeCommand(source, "crust register hermes"));
     Assertions.assertEquals(2, hosts.size());
     Assertions.assertTrue(hosts.contains("ares"));
     Assertions.assertTrue(hosts.contains("hermes"));
 
     CrustPlugin.instance.revokePermission(playerUuid, "crust.register");
-    Assertions.assertFalse(instance().executeCommand(source, "crust register hades"));
+    assertFailure(instance().executeCommand(source, "crust register hades"));
     Assertions.assertEquals(2, hosts.size());
     Assertions.assertTrue(hosts.contains("ares"));
     Assertions.assertTrue(hosts.contains("hermes"));
 
-    Assertions.assertTrue(instance().executeCommand(source, "crust unregister ares"));
+    assertSuccess(instance().executeCommand(source, "crust unregister ares"));
     Assertions.assertEquals(1, hosts.size());
     Assertions.assertTrue(hosts.contains("hermes"));
 
     CrustPlugin.instance.revokePermission(playerUuid, "crust.unregister");
-    Assertions.assertFalse(instance().executeCommand(source, "crust register hermes"));
+    assertFailure(instance().executeCommand(source, "crust register hermes"));
     Assertions.assertEquals(1, hosts.size());
     Assertions.assertTrue(hosts.contains("hermes"));
 
     // Make sure that permissions work on inherited nodes too
-    Assertions.assertTrue(instance().executeCommand(source, "crust player ares edit nickname mars"));
+    assertSuccess(instance().executeCommand(source, "crust player ares edit nickname mars"));
     CrustPlugin.instance.revokePermission(playerUuid, "crust.player");
-    Assertions.assertFalse(instance().executeCommand(source, "crust player ares edit nickname mars"));
+    assertFailure(instance().executeCommand(source, "crust player ares edit nickname mars"));
   }
 
   @Test
@@ -219,7 +257,7 @@ public class MantleTest {
     UUID playerUuid = UUID.randomUUID();
     TestAudience audience = new TestAudience();
     CommandSource source = new CommandSource(CommandSource.Type.PLAYER, playerUuid, audience);
-    Assertions.assertTrue(instance().executeCommand(source, "crust player ?"));
+    assertSuccess(instance().executeCommand(source, "crust player ?"));
     Assertions.assertTrue(audience.hasSentMessage());
   }
 

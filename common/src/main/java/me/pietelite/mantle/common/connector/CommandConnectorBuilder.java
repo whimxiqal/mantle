@@ -25,32 +25,27 @@
 package me.pietelite.mantle.common.connector;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
-import java.util.function.Supplier;
+import me.pietelite.mantle.common.CommandExecutor;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 public class CommandConnectorBuilder {
 
-  private final List<String> aliases = new LinkedList<>();
+  private final List<CommandRoot> roots = new LinkedList<>();
   private final Map<Integer, String> rulePermissions = new HashMap<>();
-  private String baseCommand;
   private Class<? extends Lexer> lexerClass;
   private Class<? extends Parser> parserClass;
-  private Supplier<ParseTreeVisitor<Boolean>> executionHandler;
+  private CommandExecutor executor;
   private HelpCommandInfo helpCommandInfo;
   private CompletionInfo completionInfo;
   private boolean useDefaultParseError = true;
 
   public CommandConnector build() {
-    if (baseCommand == null) {
-      throw new InvalidCommandConnector("The baseCommand of a Mantle Command Connector may not be null");
+    if (roots.isEmpty()) {
+      throw new InvalidCommandConnector("There must be at least one command root");
     }
     if (lexerClass == null) {
       throw new InvalidCommandConnector("The lexerClass of a Mantle Command Connector may not be null");
@@ -58,53 +53,43 @@ public class CommandConnectorBuilder {
     if (parserClass == null) {
       throw new InvalidCommandConnector("The parserClass of a Mantle Command Connector may not be null");
     }
-    if (executionHandler == null) {
-      throw new InvalidCommandConnector("The executionHandler of a Mantle Command Connector may not be null");
+    if (executor == null) {
+      throw new InvalidCommandConnector("The executor of a Mantle Command Connector may not be null");
     }
     if (completionInfo == null) {
       completionInfo = CompletionInfo.builder().build();
     }
-    return new CommandConnectorImpl(baseCommand,
-        aliases,
+    return new CommandConnectorImpl(roots,
         lexerClass,
         parserClass,
-        executionHandler,
+        executor,
         helpCommandInfo,
         rulePermissions,
         completionInfo,
         useDefaultParseError);
   }
 
-  public CommandConnectorBuilder setBaseCommand(String baseCommand) {
-    this.baseCommand = baseCommand;
+  public CommandConnectorBuilder addRoot(CommandRoot root) {
+    this.roots.add(root);
     return this;
   }
 
-  public CommandConnectorBuilder addAlias(String alias) {
-    String aliasLower = alias.toLowerCase(Locale.ROOT);
-    if (aliases.contains(aliasLower)) {
-      throw new IllegalArgumentException("Alias " + alias + " was already added.");
-    }
-    aliases.add(alias);
-    return this;
-  }
-
-  public CommandConnectorBuilder setLexerClass(Class<? extends Lexer> lexerClass) {
+  public CommandConnectorBuilder lexer(Class<? extends Lexer> lexerClass) {
     this.lexerClass = lexerClass;
     return this;
   }
 
-  public CommandConnectorBuilder setParserClass(Class<? extends Parser> parserClass) {
+  public CommandConnectorBuilder parser(Class<? extends Parser> parserClass) {
     this.parserClass = parserClass;
     return this;
   }
 
-  public CommandConnectorBuilder setExecutionHandler(Supplier<ParseTreeVisitor<Boolean>> executionHandler) {
-    this.executionHandler = executionHandler;
+  public CommandConnectorBuilder executor(CommandExecutor executor) {
+    this.executor = executor;
     return this;
   }
 
-  public CommandConnectorBuilder setHelpCommandInfo(HelpCommandInfo helpCommandInfo) {
+  public CommandConnectorBuilder helpInfo(HelpCommandInfo helpCommandInfo) {
     this.helpCommandInfo = helpCommandInfo;
     return this;
   }
@@ -116,7 +101,7 @@ public class CommandConnectorBuilder {
     return this;
   }
 
-  public CommandConnectorBuilder setCompletionInfo(CompletionInfo completionInfo) {
+  public CommandConnectorBuilder completionInfo(CompletionInfo completionInfo) {
     this.completionInfo = completionInfo;
     return this;
   }

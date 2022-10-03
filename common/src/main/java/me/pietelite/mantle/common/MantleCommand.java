@@ -34,6 +34,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import me.pietelite.mantle.common.connector.CommandConnector;
+import me.pietelite.mantle.common.connector.CommandRoot;
 import me.pietelite.mantle.common.connector.HelpCommandInfo;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -52,96 +53,85 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 public class MantleCommand {
 
   private static final List<String> HELP_COMMAND_ARGS = new LinkedList<>();
+  private final CommandConnector connector;
+  private final CommandRoot root;
+
   {
     HELP_COMMAND_ARGS.add("?");
     HELP_COMMAND_ARGS.add("help");
   }
-  private final CommandConnector connector;
 
-  public MantleCommand(CommandConnector connector) {
+  public MantleCommand(CommandConnector connector, CommandRoot commandRoot) {
     this.connector = connector;
+    this.root = commandRoot;
   }
 
   public CommandConnector getConnector() {
     return connector;
   }
 
-  public final boolean process(CommandSource source, String justArguments) {
-    String arguments = connector.baseCommand() + " " + justArguments;
-    Mantle.sessionLock().lock();
-    try {
-      Mantle.setSession(new CommandSession(source));
-      if (executeHelpCommand(source, arguments)) {
-        return true;
-      }
-
-      CharStream input = CharStreams.fromString(arguments);
-
-      Lexer lexer = connector.lexer(input);
-      TokenStream tokens = new CommonTokenStream(lexer);
-      Parser parser = connector.parser(tokens);
-
-      parser.removeErrorListeners();
-      MantleErrorListener errorListener = new MantleErrorListener();
-      parser.addErrorListener(errorListener);
-      ParseTree parseTree = connector.getBaseContext(parser);
-
-      if (errorListener.hasError()) {
-        Optional<String> message = errorListener.message();
-        if (message.isPresent() && connector.useDefaultParseError()) {
-          source.getAudience().sendMessage(Component.text(message.get()).color(NamedTextColor.DARK_RED));
-        }
-        return false;
-      }
-
-      if (isRestricted(parseTree)) {
-        Mantle.session().getSource()
-            .getAudience()
-            .sendMessage(Component.text("You don't have permissions to do that").color(NamedTextColor.RED));
-        return false;
-      }
-
-      ParseTreeVisitor<Boolean> executor = connector.executor();
-      Boolean result = executor.visit(parseTree);
-      if (result == null) {
-        return false;
-      }
-      return result;
-    } finally {
-      Mantle.sessionLock().unlock();
+  public final CommandResult process(CommandSource source, String justArguments) {
+    String arguments = root.baseCommand() + " " + justArguments;
+    if (executeHelpCommand(source, arguments)) {
+      return CommandResult.success();
     }
+
+    CharStream input = CharStreams.fromString(arguments);
+
+    Lexer lexer = connector.lexer(input);
+    TokenStream tokens = new CommonTokenStream(lexer);
+    Parser parser = connector.parser(tokens);
+
+    parser.removeErrorListeners();
+    MantleErrorListener errorListener = new MantleErrorListener();
+    parser.addErrorListener(errorListener);
+    ParseTree parseTree = connector.baseContext(parser, root);
+
+    if (errorListener.hasError()) {
+      Optional<String> message = errorListener.message();
+      if (message.isPresent() && connector.useDefaultParseError()) {
+        source.audience().sendMessage(Component.text(message.get()).color(NamedTextColor.DARK_RED));
+      }
+      return CommandResult.failure();
+    }
+
+    if (isRestricted(source, parseTree)) {
+      source.audience().sendMessage(Component.text("You don't have permissions to do that").color(NamedTextColor.RED));
+      return CommandResult.failure();
+    }
+
+    ParseTreeVisitor<CommandResult> executor = connector.executor().provide(source);
+    CommandResult result = executor.visit(parseTree);
+    if (result == null) {
+      return CommandResult.failure();
+    }
+    return result;
   }
 
   public final synchronized List<String> complete(CommandSource source, String justArguments) {
-    String arguments = connector.baseCommand() + " " + justArguments;
-    Mantle.sessionLock().lock();
-    try {
-      Mantle.setSession(new CommandSession(source));
-      boolean argumentsEndInWhitespace = Character.isWhitespace(arguments.charAt(arguments.length() - 1));
-      String trimmedArgs = arguments.trim();
-      CharStream input = CharStreams.fromString(trimmedArgs);
+    String arguments = root.baseCommand() + " " + justArguments;
+    boolean argumentsEndInWhitespace = Character.isWhitespace(arguments.charAt(arguments.length() - 1));
+    String trimmedArgs = arguments.trim();
+    CharStream input = CharStreams.fromString(trimmedArgs);
 
-      Lexer lexer = connector.lexer(input);
-      TokenStream tokens = new CommonTokenStream(lexer);
-      Parser parser = connector.parser(tokens);
+    Lexer lexer = connector.lexer(input);
+    TokenStream tokens = new CommonTokenStream(lexer);
+    Parser parser = connector.parser(tokens);
 
-      parser.removeErrorListeners();
-      MantleErrorListener errorListener = new MantleErrorListener();
-      parser.addErrorListener(errorListener);
-      ParseTree parseTree = connector.getBaseContext(parser);
+    parser.removeErrorListeners();
+    MantleErrorListener errorListener = new MantleErrorListener();
+    parser.addErrorListener(errorListener);
+    ParseTree parseTree = connector.baseContext(parser, root);
 
-      if (isRestricted(parseTree)) {
-        // This command is not even allowed by this person
-        return Collections.emptyList();
-      }
-
-      return completionsFor(parser, parseTree, trimmedArgs, argumentsEndInWhitespace);
-    } finally {
-      Mantle.sessionLock().unlock();
+    if (isRestricted(source, parseTree)) {
+      // This command is not even allowed by this person
+      return Collections.emptyList();
     }
+
+    return completionsFor(source, parser, parseTree, trimmedArgs, argumentsEndInWhitespace);
   }
 
-  private List<String> completionsFor(Parser parser, ParseTree parseTree, String arguments, boolean argumentsEndInWhitespace) {
+  private List<String> completionsFor(CommandSource source, Parser parser, ParseTree parseTree, String arguments, boolean argumentsEndInWhitespace) {
     CodeCompletionCore core = new CodeCompletionCore(parser, connector.completionInfo().completableRules(), connector.completionInfo().ignoredCompletionTokens());
 
     CaretTokenIndexResult caretTokenIndexResult;
@@ -167,7 +157,7 @@ public class MantleCommand {
         .filter(t -> {
           // This token is not allowed by this person
           String permission = connector.rulePermissions().get(t);
-          return permission == null || Mantle.sourceHasPermission(permission);
+          return permission == null || source.hasPermission(permission);
         })
         .map(t -> parser.getVocabulary().getLiteralName(t))
         .filter(s -> Objects.nonNull(s) && s.length() > 2)
@@ -250,31 +240,31 @@ public class MantleCommand {
     MantleErrorListener errorListener = new MantleErrorListener();
     parser.addErrorListener(errorListener);
 
-    ParserRuleContext ruleContext = connector.getBaseContext(parser);
+    ParserRuleContext ruleContext = connector.baseContext(parser, root);
     DescriptionListener descriptionListener = new DescriptionListener(helpCommandInfo);
     ParseTreeWalker walker = new ParseTreeWalker();
     walker.walk(descriptionListener, ruleContext);
 
     Optional<Component> description = descriptionListener.description();
     if (description.isPresent()) {
-      source.getAudience().sendMessage(helpCommandInfo.header());
-      source.getAudience().sendMessage(Component.text("Description: ").append(description.get()));
-      List<String> next = completionsFor(parser, ruleContext, arguments, true);
+      source.audience().sendMessage(helpCommandInfo.header());
+      source.audience().sendMessage(Component.text("Description: ").append(description.get()));
+      List<String> next = completionsFor(source, parser, ruleContext, arguments, true);
       for (String n : next) {
-        source.getAudience().sendMessage(Component.text("> ").append(Component.text(n)));
+        source.audience().sendMessage(Component.text("> ").append(Component.text(n)));
       }
     } else {
-      source.getAudience().sendMessage(Component.text("No help command found"));
+      source.audience().sendMessage(Component.text("No help command found"));
     }
     return true;
   }
 
-  private boolean isRestricted(ParseTree parseTree) {
+  private boolean isRestricted(CommandSource source, ParseTree parseTree) {
     Map<Integer, String> rulePermissions = connector.rulePermissions();
     if (rulePermissions == null) {
       rulePermissions = Collections.emptyMap();
     }
-    PermissionListener permissionListener = new PermissionListener(rulePermissions);
+    PermissionListener permissionListener = new PermissionListener(source, rulePermissions);
     ParseTreeWalker walker = new ParseTreeWalker();
     walker.walk(permissionListener, parseTree);
     return !permissionListener.isAllowed();

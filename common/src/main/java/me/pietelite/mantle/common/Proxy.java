@@ -25,6 +25,7 @@
 package me.pietelite.mantle.common;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,14 +33,7 @@ public interface Proxy {
 
   Logger logger();
 
-  @Nullable
-  UUID playerUuid(String playerName);
-
-  boolean hasPermission(UUID playerUuid, String permission);
-
-  default boolean hasPermission(String playerName, String permission) {
-    return hasPermission(playerUuid(playerName), permission);
-  }
+  boolean hasPermission(UUID playerUuid, String permission) throws NoSuchElementException;
 
   List<String> onlinePlayerNames();
 

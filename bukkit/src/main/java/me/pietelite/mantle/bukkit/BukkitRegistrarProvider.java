@@ -22,54 +22,19 @@
  * SOFTWARE.
  */
 
-package me.pietelite.mantle.common;
+package me.pietelite.mantle.bukkit;
 
-import java.util.UUID;
-import net.kyori.adventure.audience.Audience;
+import me.pietelite.mantle.common.CommandRegistrar;
+import me.pietelite.mantle.common.Mantle;
+import org.bukkit.plugin.java.JavaPlugin;
 
-public class CommandSource {
+public class BukkitRegistrarProvider {
 
-  public static CommandSource unknown() {
-    return new CommandSource(Type.UNKNOWN, null, Audience.empty());
+  public static CommandRegistrar get(JavaPlugin plugin) {
+    BukkitProxy proxy = new BukkitProxy();
+    proxy.initialize(plugin);
+    Mantle.setProxy(proxy);
+    return new BukkitCommandRegistrar();
   }
 
-  public enum Type {
-    CONSOLE,
-    PLAYER,
-    UNKNOWN
-  }
-
-  private final Type type;
-  private final UUID uuid;
-  private final Audience audience;
-
-  public CommandSource(Type type, UUID uuid, Audience audience) {
-    this.type = type;
-    this.uuid = uuid;
-    this.audience = audience;
-  }
-
-  public Type type() {
-    return type;
-  }
-
-  public UUID uuid() {
-    return uuid;
-  }
-
-  public Audience audience() {
-    return audience;
-  }
-
-  public boolean hasPermission(String permission) {
-    switch (type()) {
-      case CONSOLE:
-      case UNKNOWN:
-        return true;
-      case PLAYER:
-        return Mantle.getProxy().hasPermission(uuid(), permission);
-      default:
-        throw new RuntimeException();
-    }
-  }
 }

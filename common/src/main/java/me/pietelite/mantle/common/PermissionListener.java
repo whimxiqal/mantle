@@ -32,10 +32,12 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 class PermissionListener implements ParseTreeListener {
 
+  private final CommandSource source;
   private final Map<Integer, String> rulePermissions;
   private boolean allowed = true;
 
-  public PermissionListener(Map<Integer, String> rulePermissions) {
+  public PermissionListener(CommandSource source, Map<Integer, String> rulePermissions) {
+    this.source = source;
     this.rulePermissions = rulePermissions;
   }
 
@@ -65,7 +67,7 @@ class PermissionListener implements ParseTreeListener {
 
   private void evaluatePermission(int index, Map<Integer, String> permissionMap) {
     String permission = permissionMap.get(index);
-    if (permission != null && !Mantle.sourceHasPermission(permission)) {
+    if (permission != null && !source.hasPermission(permission)) {
       allowed = false;
     }
   }

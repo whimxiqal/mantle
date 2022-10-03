@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import me.pietelite.mantle.common.connector.CommandConnector;
 import me.pietelite.mantle.common.CommandSource;
 import me.pietelite.mantle.common.MantleCommand;
+import me.pietelite.mantle.common.connector.CommandRoot;
 import net.kyori.adventure.text.Component;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.command.Command;
@@ -41,8 +42,8 @@ import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 
 final class Sponge8MantleCommand extends MantleCommand implements Command.Raw {
 
-  public Sponge8MantleCommand(CommandConnector connector) {
-    super(connector);
+  public Sponge8MantleCommand(CommandConnector connector, CommandRoot root) {
+    super(connector, root);
   }
 
   @Override

@@ -25,6 +25,7 @@
 package me.pietelite.mantle.sponge8;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -45,20 +46,12 @@ class Sponge8Proxy implements Proxy {
   }
 
   @Override
-  public UUID playerUuid(String playerName) {
-    return Sponge.server().player(playerName).map(ServerPlayer::uniqueId).orElse(null);
-  }
-
-  @Override
-  public boolean hasPermission(UUID playerUuid, String permission) {
+  public boolean hasPermission(UUID playerUuid, String permission) throws NoSuchElementException {
     Optional<ServerPlayer> player = Sponge.server().player(playerUuid);
-    return player.isPresent() && player.get().hasPermission(permission);
-  }
-
-  @Override
-  public boolean hasPermission(String playerName, String permission) {
-    Optional<ServerPlayer> player = Sponge.server().player(playerName);
-    return player.isPresent() && player.get().hasPermission(permission);
+    if (!player.isPresent()) {
+      throw new NoSuchElementException("No player found with uuid " + playerUuid.toString());
+    }
+    return player.get().hasPermission(permission);
   }
 
   @Override

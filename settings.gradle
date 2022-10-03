@@ -1,4 +1,5 @@
 rootProject.name = 'mantle'
 include 'common'
 include 'sponge8'
+include 'bukkit'
 

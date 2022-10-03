@@ -22,42 +22,62 @@
  * SOFTWARE.
  */
 
-package me.pietelite.mantle.common;
+package me.pietelite.mantle.bukkit;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import me.pietelite.mantle.common.Logger;
+import me.pietelite.mantle.common.Proxy;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 
-public class CrustPlatformProxy implements Proxy {
+class BukkitProxy implements Proxy {
 
-  public static final List<String> PLAYERS = new LinkedList<>();
-
-  {
-    PLAYERS.add("PietElite");
-    PLAYERS.add("belkar1");
-  }
-
+  private final Logger logger = new BukkitLogger();
+  private BukkitAudiences adventure;
 
   @Override
   public Logger logger() {
-    return new TestLogger();
+    return logger;
   }
 
   @Override
-  public boolean hasPermission(UUID playerUuid, String permission) {
-    return !CrustPlugin.instance.playerRestrictedPermissions.containsKey(playerUuid) ||
-        !CrustPlugin.instance.playerRestrictedPermissions.get(playerUuid).contains(permission);
+  public boolean hasPermission(UUID playerUuid, String permission) throws NoSuchElementException {
+    Player player = Bukkit.getPlayer(playerUuid);
+    if (player == null) {
+      throw new NoSuchElementException("No player found with uuid " + playerUuid.toString());
+    }
+    return player.hasPermission(permission);
   }
 
   @Override
   public List<String> onlinePlayerNames() {
-    return PLAYERS;
+    return Bukkit.getServer().getOnlinePlayers()
+        .stream()
+        .map(HumanEntity::getName)
+        .collect(Collectors.toList());
   }
 
   @Override
   public List<String> worldNames() {
-    return Collections.emptyList();
+    return Bukkit.getServer().getWorlds()
+        .stream()
+        .map(World::getName)
+        .collect(Collectors.toList());
   }
+
+  public void initialize(JavaPlugin plugin) {
+    this.adventure = BukkitAudiences.create(plugin);
+  }
+
+  public BukkitAudiences adventure() {
+    return adventure;
+  }
+
 }

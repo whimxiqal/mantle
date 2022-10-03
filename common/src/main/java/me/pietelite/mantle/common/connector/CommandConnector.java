@@ -48,14 +48,14 @@
 
 package me.pietelite.mantle.common.connector;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
+import me.pietelite.mantle.common.CommandExecutor;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.TokenStream;
-import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 import org.jetbrains.annotations.Nullable;
 
 public interface CommandConnector {
@@ -64,19 +64,17 @@ public interface CommandConnector {
     return new CommandConnectorBuilder();
   }
 
-  String baseCommand();
-
-  List<String> aliases();
+  Collection<CommandRoot> roots();
 
   Lexer lexer(CharStream input);
 
   Parser parser(TokenStream tokenStream);
 
-  ParseTreeVisitor<Boolean> executor();
+  CommandExecutor executor();
 
   @Nullable HelpCommandInfo helpCommandInfo();
 
-  ParserRuleContext getBaseContext(Parser parser);
+  ParserRuleContext baseContext(Parser parser, CommandRoot root);
 
   /**
    * A map of grammar rule indexes to permissions.

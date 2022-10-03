@@ -27,6 +27,7 @@ package me.pietelite.mantle.sponge8;
 import java.util.List;
 import me.pietelite.mantle.common.CommandRegistrar;
 import me.pietelite.mantle.common.connector.CommandConnector;
+import me.pietelite.mantle.common.connector.CommandRoot;
 import org.spongepowered.api.command.Command;
 import org.spongepowered.api.event.lifecycle.RegisterCommandEvent;
 import org.spongepowered.plugin.PluginContainer;
@@ -43,15 +44,17 @@ class Sponge8CommandRegistrar implements CommandRegistrar {
 
   @Override
   public void register(CommandConnector connector) {
-    Sponge8MantleCommand command = new Sponge8MantleCommand(connector);
-    List<String> aliases = command.getConnector().aliases();
-    String[] otherAliases = new String[0];
-    if (aliases != null) {
-      otherAliases = aliases.toArray(otherAliases);
+    for (CommandRoot root : connector.roots()) {
+      Sponge8MantleCommand command = new Sponge8MantleCommand(connector, root);
+      List<String> aliases = root.aliases();
+      String[] otherAliases = new String[0];
+      if (aliases != null) {
+        otherAliases = aliases.toArray(otherAliases);
+      }
+      rawRegisterCommandEvent.register(pluginContainer, command,
+          root.baseCommand(),
+          otherAliases);
     }
-    rawRegisterCommandEvent.register(pluginContainer, command,
-        command.getConnector().baseCommand(),
-        otherAliases);
   }
 
 }
