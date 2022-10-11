@@ -27,14 +27,10 @@ package me.pietelite.mantle.common.connector;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 import me.pietelite.mantle.common.CommandExecutor;
 import me.pietelite.mantle.common.Mantle;
 import org.antlr.v4.runtime.CharStream;
@@ -42,7 +38,6 @@ import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.TokenStream;
-import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 import org.jetbrains.annotations.Nullable;
 
 class CommandConnectorImpl implements CommandConnector {
@@ -54,6 +49,7 @@ class CommandConnectorImpl implements CommandConnector {
   private final HelpCommandInfo helpCommandInfo;
   private final Map<Integer, String> rulePermissions;
   private final CompletionInfo completionInfo;
+  private final Set<Integer> playerOnlyCommands;
   private final boolean useDefaultParseError;
 
   CommandConnectorImpl(Collection<CommandRoot> roots,
@@ -63,6 +59,7 @@ class CommandConnectorImpl implements CommandConnector {
                        HelpCommandInfo helpCommandInfo,
                        Map<Integer, String> rulePermissions,
                        CompletionInfo completionInfo,
+                       Set<Integer> playerOnlyCommands,
                        boolean useDefaultParseError) {
     this.roots = Collections.unmodifiableCollection(roots);
     this.lexerClass = lexerClass;
@@ -71,6 +68,7 @@ class CommandConnectorImpl implements CommandConnector {
     this.helpCommandInfo = helpCommandInfo;
     this.rulePermissions = rulePermissions;
     this.completionInfo = completionInfo;
+    this.playerOnlyCommands = Collections.unmodifiableSet(playerOnlyCommands);
     this.useDefaultParseError = useDefaultParseError;
   }
 
@@ -189,6 +187,11 @@ class CommandConnectorImpl implements CommandConnector {
   @Override
   public CompletionInfo completionInfo() {
     return completionInfo;
+  }
+
+  @Override
+  public Set<Integer> playerOnlyCommands() {
+    return playerOnlyCommands;
   }
 
   @Override

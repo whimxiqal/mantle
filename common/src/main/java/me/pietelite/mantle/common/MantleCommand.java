@@ -260,6 +260,7 @@ public class MantleCommand {
   }
 
   private boolean isRestricted(CommandSource source, ParseTree parseTree) {
+    // Permissions
     Map<Integer, String> rulePermissions = connector.rulePermissions();
     if (rulePermissions == null) {
       rulePermissions = Collections.emptyMap();
@@ -267,7 +268,20 @@ public class MantleCommand {
     PermissionListener permissionListener = new PermissionListener(source, rulePermissions);
     ParseTreeWalker walker = new ParseTreeWalker();
     walker.walk(permissionListener, parseTree);
-    return !permissionListener.isAllowed();
+    if (!permissionListener.isAllowed()) {
+      return true;
+    }
+
+    // Player only
+    if (source.type() != CommandSource.Type.PLAYER) {
+      RuleRejectionsListener rejectionsListener = new RuleRejectionsListener(connector.playerOnlyCommands());
+      walker = new ParseTreeWalker();
+      walker.walk(rejectionsListener, parseTree);
+      if (rejectionsListener.rejected()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static class CaretTokenIndexResult {

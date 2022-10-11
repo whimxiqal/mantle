@@ -50,6 +50,7 @@ package me.pietelite.mantle.common.connector;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import me.pietelite.mantle.common.CommandExecutor;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Lexer;
@@ -86,6 +87,8 @@ public interface CommandConnector {
   Map<Integer, String> rulePermissions();
 
   CompletionInfo completionInfo();
+
+  Set<Integer> playerOnlyCommands();
 
   boolean useDefaultParseError();
 

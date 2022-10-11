@@ -24,10 +24,13 @@
 
 package me.pietelite.mantle.common.connector;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import me.pietelite.mantle.common.CommandExecutor;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
@@ -41,6 +44,7 @@ public class CommandConnectorBuilder {
   private CommandExecutor executor;
   private HelpCommandInfo helpCommandInfo;
   private CompletionInfo completionInfo;
+  private final Set<Integer> playerOnlyCommands = new HashSet<>();
   private boolean useDefaultParseError = true;
 
   public CommandConnector build() {
@@ -66,6 +70,7 @@ public class CommandConnectorBuilder {
         helpCommandInfo,
         rulePermissions,
         completionInfo,
+        playerOnlyCommands,
         useDefaultParseError);
   }
 
@@ -103,6 +108,11 @@ public class CommandConnectorBuilder {
 
   public CommandConnectorBuilder completionInfo(CompletionInfo completionInfo) {
     this.completionInfo = completionInfo;
+    return this;
+  }
+
+  public CommandConnectorBuilder playerOnlyCommands(Integer... commands) {
+    this.playerOnlyCommands.addAll(Arrays.asList(commands));
     return this;
   }
 
