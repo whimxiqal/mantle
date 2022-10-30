@@ -25,8 +25,8 @@
 package me.pietelite.mantle.common.connector;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
+import me.pietelite.mantle.common.CommandSource;
 import org.jetbrains.annotations.Nullable;
 
 public interface CompletionInfo {
@@ -52,7 +52,7 @@ public interface CompletionInfo {
    * @param completableIndex the index in the list of completable rules
    * @return possible completions
    */
-  Collection<String> completionsFor(int callerRule, int completableRule, int completableIndex);
+  Collection<String> completionsFor(CommandSource source, int callerRule, int completableRule, int completableIndex);
 
   Set<Integer> completableRules();
 

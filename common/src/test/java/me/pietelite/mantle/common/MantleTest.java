@@ -38,14 +38,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static me.pietelite.mantle.common.CrustParser.RULE_crust;
-import static me.pietelite.mantle.common.CrustParser.RULE_identifier;
-import static me.pietelite.mantle.common.CrustParser.RULE_player;
-import static me.pietelite.mantle.common.CrustParser.RULE_playerEdit;
-import static me.pietelite.mantle.common.CrustParser.RULE_playerEditNickname;
-import static me.pietelite.mantle.common.CrustParser.RULE_playerInfo;
-import static me.pietelite.mantle.common.CrustParser.RULE_register;
-import static me.pietelite.mantle.common.CrustParser.RULE_unregister;
+
+import static me.pietelite.mantle.common.CrustParser.*;
 
 public class MantleTest {
 
@@ -61,63 +55,67 @@ public class MantleTest {
   static void setUpAll() {
     Mantle.setProxy(new CrustPlatformProxy());
     CrustPlugin.instance = new CrustPlugin();
-    CrustPlugin.instance.registerCommand(CommandConnector.builder().addRoot(CommandRoot.builder("crust").build())
-            .lexer(CrustLexer.class)
-            .parser(CrustParser.class)
-            .executor(source -> new CrustBaseVisitor<CommandResult>() {
-              @Override
-              public CommandResult visitRegister(CrustParser.RegisterContext ctx) {
-                String playerName = ctx.user.getText();
-                boolean added = CrustPlugin.instance.players.add(playerName);
-                if (added) {
-                  source.audience().sendMessage(Component.text("The player was added"));
-                  return CommandResult.success();
-                } else {
-                  source.audience().sendMessage(Component.text("A player already exists with that name"));
-                  return CommandResult.failure();
-                }
-              }
+    CrustPlugin.instance.registerCommand(CommandConnector.builder()
+        .addRoot(CommandRoot.builder("crust").build())
+        .addRoot(CommandRoot.builder("core").build())
+        .lexer(CrustLexer.class)
+        .parser(CrustParser.class)
+        .executor(source -> new CrustBaseVisitor<CommandResult>() {
+          @Override
+          public CommandResult visitRegister(CrustParser.RegisterContext ctx) {
+            String playerName = ctx.user.getText();
+            boolean added = CrustPlugin.instance.players.add(playerName);
+            if (added) {
+              source.audience().sendMessage(Component.text("The player was added"));
+              return CommandResult.success();
+            } else {
+              source.audience().sendMessage(Component.text("A player already exists with that name"));
+              return CommandResult.failure();
+            }
+          }
 
-              @Override
-              public CommandResult visitUnregister(CrustParser.UnregisterContext ctx) {
-                boolean removed = CrustPlugin.instance.players.remove(ctx.identifier().getText());
-                if (removed) {
-                  source.audience().sendMessage(Component.text("The player was removed"));
-                  return CommandResult.success();
-                } else {
-                  source.audience().sendMessage(Component.text("The player could not be removed"));
-                  return CommandResult.failure();
-                }
-              }
+          @Override
+          public CommandResult visitUnregister(CrustParser.UnregisterContext ctx) {
+            boolean removed = CrustPlugin.instance.players.remove(ctx.identifier().getText());
+            if (removed) {
+              source.audience().sendMessage(Component.text("The player was removed"));
+              return CommandResult.success();
+            } else {
+              source.audience().sendMessage(Component.text("The player could not be removed"));
+              return CommandResult.failure();
+            }
+          }
 
-              @Override
-              public CommandResult visitPlayerEditNickname(CrustParser.PlayerEditNicknameContext ctx) {
-                return CommandResult.success();
-              }
-            })
-            .helpInfo(HelpCommandInfo.builder()
-                .addDescription(RULE_crust, Component.text("Basic crust command"))
-                .addDescription(RULE_register, Component.text("Register a player for a thing"))
-                .addDescription(RULE_unregister, Component.text("Unregister a registered player"))
-                .addDescription(RULE_player, Component.text("Edit or see information about a player"))
-                .addDescription(RULE_playerInfo, Component.text("Lookup information about a player"))
-                .addDescription(RULE_playerEdit, Component.text("Edit information about a player"))
-                .addDescription(RULE_playerEditNickname, Component.text("Edit the nickname of a player"))
-                .addIgnored(RULE_identifier)
-                .build())
-            .addPermission(RULE_register, "crust.register")
-            .addPermission(RULE_unregister, "crust.unregister")
-            .addPermission(RULE_player, "crust.player")
-            .addPermission(RULE_playerEdit, "crust.player.edit")
-            .completionInfo(CompletionInfo.builder()
-                .addParameter("color", COLORS)
-                .registerCompletion(RULE_player, RULE_identifier, 0, "player")
-                .registerCompletion(RULE_register, RULE_identifier, 0, "player")
-                .registerCompletion(RULE_register, RULE_identifier, 1, "color")
-                .addIgnoredCompletionToken(CrustLexer.SINGLE_QUOTE)
-                .addIgnoredCompletionToken(CrustLexer.DOUBLE_QUOTE)
-                .build())
-            .build());
+          @Override
+          public CommandResult visitPlayerEditNickname(CrustParser.PlayerEditNicknameContext ctx) {
+            return CommandResult.success();
+          }
+
+        })
+        .helpInfo(HelpCommandInfo.builder()
+            .addDescription(RULE_crust, Component.text("Basic crust command"))
+            .addDescription(RULE_register, Component.text("Register a player for a thing"))
+            .addDescription(RULE_unregister, Component.text("Unregister a registered player"))
+            .addDescription(RULE_player, Component.text("Edit or see information about a player"))
+            .addDescription(RULE_playerInfo, Component.text("Lookup information about a player"))
+            .addDescription(RULE_playerEdit, Component.text("Edit information about a player"))
+            .addDescription(RULE_playerEditNickname, Component.text("Edit the nickname of a player"))
+            .addIgnored(RULE_identifier)
+            .build())
+        .addPermission(RULE_register, "crust.register")
+        .addPermission(RULE_unregister, "crust.unregister")
+        .addPermission(RULE_player, "crust.player")
+        .addPermission(RULE_playerEdit, "crust.player.edit")
+        .completionInfo(CompletionInfo.builder()
+            .addParameter("color", COLORS)
+            .registerCompletion(RULE_player, RULE_identifier, 0, "player")
+            .registerCompletion(RULE_register, RULE_identifier, 0, "player")
+            .registerCompletion(RULE_register, RULE_identifier, 1, "color")
+            .registerCompletion(RULE_core, RULE_identifier, 0, "color")
+            .addIgnoredCompletionToken(CrustLexer.SINGLE_QUOTE)
+            .addIgnoredCompletionToken(CrustLexer.DOUBLE_QUOTE)
+            .build())
+        .build());
   }
 
   @BeforeEach
@@ -182,6 +180,16 @@ public class MantleTest {
     Assertions.assertEquals(0, completions.size());
 
     completions = instance().completeCommand(source, "crust register tornado ");
+    Assertions.assertEquals(COLORS.size(), completions.size());
+    for (String color : COLORS) {
+      Assertions.assertTrue(completions.contains(color));
+    }
+  }
+
+  @Test
+  void completeCoreCommand() {
+    CommandSource source = new CommandSource(CommandSource.Type.CONSOLE, null, Audience.empty());
+    List<String> completions = instance().completeCommand(source, "core ");
     Assertions.assertEquals(COLORS.size(), completions.size());
     for (String color : COLORS) {
       Assertions.assertTrue(completions.contains(color));

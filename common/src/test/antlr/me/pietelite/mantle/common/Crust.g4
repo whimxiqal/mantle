@@ -2,6 +2,8 @@ grammar Crust;
 
 // crust
 crust: CRUST (register | unregister | player);
+core: CORE color=identifier;  // just tests autocompletion for this specific case
+
 register: REGISTER user=identifier color=identifier?;
 unregister: UNREGISTER identifier;
 player: PLAYER identifier (playerInfo | playerEdit);
@@ -11,6 +13,7 @@ playerEditNickname: NICKNAME identifier;
 
 // tokens
 CRUST: 'crust';
+CORE: 'core';
 REGISTER: 'register';
 UNREGISTER: 'unregister';
 PLAYER: 'player';

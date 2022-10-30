@@ -32,6 +32,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import me.pietelite.mantle.common.connector.CommandConnector;
 import me.pietelite.mantle.common.connector.CommandRoot;
@@ -121,7 +125,7 @@ public class MantleCommand {
     parser.removeErrorListeners();
     MantleErrorListener errorListener = new MantleErrorListener();
     parser.addErrorListener(errorListener);
-    ParseTree parseTree = connector.baseContext(parser, root);
+    ParserRuleContext parseTree = connector.baseContext(parser, root);
 
     if (isRestricted(source, parseTree)) {
       // This command is not even allowed by this person
@@ -131,7 +135,7 @@ public class MantleCommand {
     return completionsFor(source, parser, parseTree, trimmedArgs, argumentsEndInWhitespace);
   }
 
-  private List<String> completionsFor(CommandSource source, Parser parser, ParseTree parseTree, String arguments, boolean argumentsEndInWhitespace) {
+  private List<String> completionsFor(CommandSource source, Parser parser, ParserRuleContext parseTree, String arguments, boolean argumentsEndInWhitespace) {
     CodeCompletionCore core = new CodeCompletionCore(parser, connector.completionInfo().completableRules(), connector.completionInfo().ignoredCompletionTokens());
 
     CaretTokenIndexResult caretTokenIndexResult;
@@ -147,7 +151,7 @@ public class MantleCommand {
         caretTokenIndexResult = new CaretTokenIndexResult(caretTokenIndexResult.index + 1, "");
       }
     }
-    CodeCompletionCore.CandidatesCollection collection = core.collectCandidates(caretTokenIndexResult.index, null);
+    CodeCompletionCore.CandidatesCollection collection = core.collectCandidates(caretTokenIndexResult.index, parseTree);
     String currentText = caretTokenIndexResult.text;
 
     List<String> possibleCompletions = new LinkedList<>();
@@ -174,10 +178,10 @@ public class MantleCommand {
         continue;
       }
       int caller = rule.getValue().get(rule.getValue().size() - 1);  // caller is the last one in the stack
-      possibleCompletions.addAll(connector.completionInfo().completionsFor(caller, rule.getKey(), completableIndex));
+      possibleCompletions.addAll(connector.completionInfo().completionsFor(source, caller, rule.getKey(), completableIndex));
     }
     return possibleCompletions.stream()
-        .filter(s -> s.toLowerCase(Locale.ROOT).startsWith(currentText.toLowerCase(Locale.ROOT)))
+        .filter(s -> s.toLowerCase(Locale.ROOT).startsWith(currentText.toLowerCase(Locale.ENGLISH)))
         .collect(Collectors.toList());
   }
 

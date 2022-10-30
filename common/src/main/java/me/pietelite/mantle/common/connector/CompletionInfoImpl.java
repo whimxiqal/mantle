@@ -31,26 +31,28 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Supplier;
+import me.pietelite.mantle.common.CommandSource;
 import me.pietelite.mantle.common.Mantle;
 import org.jetbrains.annotations.Nullable;
 
 class CompletionInfoImpl implements CompletionInfo {
 
-  public static final Map<String, Supplier<Collection<String>>> DEFAULT_PARAMETERS = new HashMap<>();
+  public static final Map<String, Function<CommandSource, Collection<String>>> DEFAULT_PARAMETERS = new HashMap<>();
 
-  {
-    DEFAULT_PARAMETERS.put("player", () -> Mantle.getProxy().onlinePlayerNames());
-    DEFAULT_PARAMETERS.put("world", () -> Mantle.getProxy().worldNames());
+  static {
+    DEFAULT_PARAMETERS.put("player", (src) -> Mantle.getProxy().onlinePlayerNames());
+    DEFAULT_PARAMETERS.put("world", (src) -> Mantle.getProxy().worldNames());
   }
 
 
   private final Map<Integer, Map<Integer, Map<Integer, String>>> completionTable;
-  private final Map<String, Supplier<Collection<String>>> parameterToCompletions;
+  private final Map<String, Function<CommandSource, Collection<String>>> parameterToCompletions;
   private final Set<Integer> ignoredCompletionTokens;
 
   public CompletionInfoImpl(Map<Integer, Map<Integer, Map<Integer, String>>> completionTable,
-                            Map<String, Supplier<Collection<String>>> parameterToCompletions,
+                            Map<String, Function<CommandSource, Collection<String>>> parameterToCompletions,
                             Set<Integer> ignoredCompletionTokens) {
     this.completionTable = completionTable;
     this.parameterToCompletions = parameterToCompletions;
@@ -58,7 +60,7 @@ class CompletionInfoImpl implements CompletionInfo {
   }
 
   @Override
-  public Collection<String> completionsFor(int callerRule, int completableRule, int completableIndex) {
+  public Collection<String> completionsFor(CommandSource source, int callerRule, int completableRule, int completableIndex) {
     Map<Integer, Map<Integer, String>> completionTable1 = completionTable.get(completableRule);
     if (completionTable1 == null) {
       return Collections.emptyList();
@@ -72,14 +74,14 @@ class CompletionInfoImpl implements CompletionInfo {
       return Collections.emptyList();
     }
 
-    Supplier<Collection<String>> completions = DEFAULT_PARAMETERS.get(parameter);
+    Function<CommandSource, Collection<String>> completions = DEFAULT_PARAMETERS.get(parameter);
     if (completions == null) {
       completions = parameterToCompletions.get(parameter);
       if (completions == null) {
         return Collections.emptyList();
       }
     }
-    return completions.get();
+    return completions.apply(source);
   }
 
   @Override

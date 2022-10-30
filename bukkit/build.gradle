@@ -1,0 +1,27 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'java'
+}
+
+repositories {
+    maven {
+        url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+    }
+}
+
+dependencies {
+    implementation project(':common')
+
+    shadow "net.kyori:adventure-platform-bukkit:4.1.2"
+    shadow 'net.kyori:adventure-text-serializer-legacy:4.11.0'
+    shadow 'net.kyori:adventure-text-serializer-plain:4.11.0'
+
+    compileOnly 'org.bukkit:bukkit:1.12-R0.1-SNAPSHOT'
+
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar.enabled = true

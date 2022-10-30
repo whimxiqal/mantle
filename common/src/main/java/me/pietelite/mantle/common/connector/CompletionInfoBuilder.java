@@ -29,12 +29,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
+import java.util.function.Function;
+import me.pietelite.mantle.common.CommandSource;
 
 public class CompletionInfoBuilder {
 
   private final Map<Integer, Map<Integer, Map<Integer, String>>> completionTable = new HashMap<>();
-  private final Map<String, Supplier<Collection<String>>> parameterToCompletions = new HashMap<>();
+  private final Map<String, Function<CommandSource, Collection<String>>> parameterToCompletions = new HashMap<>();
   private final Set<Integer> ignoredCompletionTokens = new HashSet<>();
 
   public CompletionInfo build() {
@@ -49,11 +50,11 @@ public class CompletionInfoBuilder {
   }
 
   public CompletionInfoBuilder addParameter(String parameterName, Collection<String> completions) {
-    parameterToCompletions.put(parameterName, () -> completions);
+    parameterToCompletions.put(parameterName, (src) -> completions);
     return this;
   }
 
-  public CompletionInfoBuilder addParameter(String parameterName, Supplier<Collection<String>> completions) {
+  public CompletionInfoBuilder addParameter(String parameterName, Function<CommandSource, Collection<String>> completions) {
     parameterToCompletions.put(parameterName, completions);
     return this;
   }
