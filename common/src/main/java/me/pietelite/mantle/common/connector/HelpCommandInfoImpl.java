@@ -22,53 +22,38 @@
  * SOFTWARE.
  */
 
-package me.pietelite.mantle.common;
+package me.pietelite.mantle.common.connector;
 
 import java.util.Map;
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.tree.ErrorNode;
-import org.antlr.v4.runtime.tree.ParseTreeListener;
-import org.antlr.v4.runtime.tree.TerminalNode;
+import java.util.Set;
+import net.kyori.adventure.text.Component;
 
-class PermissionListener implements ParseTreeListener {
+class HelpCommandInfoImpl implements HelpCommandInfo {
 
-  private final CommandSource source;
-  private final Map<Integer, String> rulePermissions;
-  private boolean allowed = true;
+  private final Component header;
+  private final Map<Integer, Component> descriptions;
+  private final Set<Integer> ignored;
 
-  public PermissionListener(CommandSource source, Map<Integer, String> rulePermissions) {
-    this.source = source;
-    this.rulePermissions = rulePermissions;
+  public HelpCommandInfoImpl(Component header,
+                             Map<Integer, Component> descriptions,
+                             Set<Integer> ignored) {
+    this.header = header;
+    this.descriptions = descriptions;
+    this.ignored = ignored;
   }
 
   @Override
-  public void visitTerminal(TerminalNode node) {
-    // ignore
+  public Component header() {
+    return header;
   }
 
   @Override
-  public void visitErrorNode(ErrorNode node) {
-    // ignore
+  public Map<Integer, Component> descriptions() {
+    return descriptions;
   }
 
   @Override
-  public void enterEveryRule(ParserRuleContext ctx) {
-    evaluatePermission(ctx.getRuleIndex(), rulePermissions);
-  }
-
-  @Override
-  public void exitEveryRule(ParserRuleContext ctx) {
-    // ignore
-  }
-
-  public boolean isAllowed() {
-    return allowed;
-  }
-
-  private void evaluatePermission(int index, Map<Integer, String> permissionMap) {
-    String permission = permissionMap.get(index);
-    if (permission != null && !source.hasPermission(permission)) {
-      allowed = false;
-    }
+  public Set<Integer> ignored() {
+    return ignored;
   }
 }

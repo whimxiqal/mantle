@@ -24,40 +24,13 @@
 
 package me.pietelite.mantle.common;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+/**
+ * A logger with which to send important data to console.
+ */
+public interface Logger {
 
-public class CrustPlatformProxy implements Proxy {
-
-  public static final List<String> PLAYERS = new LinkedList<>();
-
-  {
-    PLAYERS.add("PietElite");
-    PLAYERS.add("belkar1");
+  default void error(String message) {
+    System.out.println("[ERROR]: " + message);
   }
 
-
-  @Override
-  public Logger logger() {
-    return new TestLogger();
-  }
-
-  @Override
-  public boolean hasPermission(UUID playerUuid, String permission) {
-    return !CrustPlugin.instance.playerRestrictedPermissions.containsKey(playerUuid) ||
-        !CrustPlugin.instance.playerRestrictedPermissions.get(playerUuid).contains(permission);
-  }
-
-  @Override
-  public List<String> onlinePlayerNames() {
-    return PLAYERS;
-  }
-
-  @Override
-  public List<String> worldNames() {
-    return Collections.emptyList();
-  }
 }

@@ -24,21 +24,23 @@
 
 package me.pietelite.mantle.common;
 
-import java.util.Map;
+import java.util.Set;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-class PermissionListener implements ParseTreeListener {
+/**
+ * Generic parse tree listener just for determining whether a certain parse tree should be rejected given
+ * a set or rejected rules by traversing the tree and flagging when a rejected rule shows up.
+ */
+public class RuleRejectionsListener implements ParseTreeListener {
 
-  private final CommandSource source;
-  private final Map<Integer, String> rulePermissions;
-  private boolean allowed = true;
+  private final Set<Integer> ruleRejections;
+  private boolean rejected = false;
 
-  public PermissionListener(CommandSource source, Map<Integer, String> rulePermissions) {
-    this.source = source;
-    this.rulePermissions = rulePermissions;
+  public RuleRejectionsListener(Set<Integer> ruleRejections) {
+    this.ruleRejections = ruleRejections;
   }
 
   @Override
@@ -53,7 +55,9 @@ class PermissionListener implements ParseTreeListener {
 
   @Override
   public void enterEveryRule(ParserRuleContext ctx) {
-    evaluatePermission(ctx.getRuleIndex(), rulePermissions);
+    if (ruleRejections.contains(ctx.getRuleIndex())) {
+      rejected = true;
+    }
   }
 
   @Override
@@ -61,14 +65,8 @@ class PermissionListener implements ParseTreeListener {
     // ignore
   }
 
-  public boolean isAllowed() {
-    return allowed;
+  public boolean rejected() {
+    return rejected;
   }
 
-  private void evaluatePermission(int index, Map<Integer, String> permissionMap) {
-    String permission = permissionMap.get(index);
-    if (permission != null && !source.hasPermission(permission)) {
-      allowed = false;
-    }
-  }
 }

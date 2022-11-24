@@ -22,42 +22,42 @@
  * SOFTWARE.
  */
 
-package me.pietelite.mantle.common;
+package me.pietelite.mantle.common.connector;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+import java.util.Map;
+import java.util.Set;
+import net.kyori.adventure.text.Component;
 
-public class CrustPlatformProxy implements Proxy {
+/**
+ * General information about a help command.
+ * A help command sends information to the user about how to use a command.
+ */
+public interface HelpCommandInfo {
 
-  public static final List<String> PLAYERS = new LinkedList<>();
-
-  {
-    PLAYERS.add("PietElite");
-    PLAYERS.add("belkar1");
+  static HelpCommandInfoBuilder builder() {
+    return new HelpCommandInfoBuilder();
   }
 
+  /**
+   * The header of the help command.
+   *
+   * @return the header
+   */
+  Component header();
 
-  @Override
-  public Logger logger() {
-    return new TestLogger();
-  }
+  /**
+   * All descriptions, keyed underneath the indexes of their corresponding parser rules.
+   *
+   * @return the descriptions
+   */
+  Map<Integer, Component> descriptions();
 
-  @Override
-  public boolean hasPermission(UUID playerUuid, String permission) {
-    return !CrustPlugin.instance.playerRestrictedPermissions.containsKey(playerUuid) ||
-        !CrustPlugin.instance.playerRestrictedPermissions.get(playerUuid).contains(permission);
-  }
+  /**
+   * Get all ignored rules. These rules should not be considered when looking up descriptions,
+   * and the description and information about a higher-level command should be given instead.
+   *
+   * @return ignored rules
+   */
+  Set<Integer> ignored();
 
-  @Override
-  public List<String> onlinePlayerNames() {
-    return PLAYERS;
-  }
-
-  @Override
-  public List<String> worldNames() {
-    return Collections.emptyList();
-  }
 }

@@ -1,29 +1,79 @@
 plugins {
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
     id 'java'
 }
 
 dependencies {
-    implementation project(':common')
-
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
-
-    // https://mvnrepository.com/artifact/org.spongepowered/spongeapi
+    compileOnly project(':common')
     compileOnly 'org.spongepowered:spongeapi:8.0.0'
 }
 
-test {
-    useJUnitPlatform()
-}
+if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword') && project.ext.publish) {
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
 
-shadowJar {
+    publishing {
+        repositories {
+            maven {
+                name = "sonatype"
+                url = project.ext.snapshot
+                        ? "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                        : "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                credentials {
+                    username sonatypeUsername
+                    password sonatypePassword
+                }
+            }
+        }
+        publications {
+            mavenJava(MavenPublication) {
+                groupId = 'me.pietelite.mantle'
+                artifactId = 'sponge8'
+                version = project.ext.fullVersion
+                from components.java
+                versionMapping {
+                    usage('java-api') {
+                        fromResolutionOf('runtimeClasspath')
+                    }
+                    usage('java-runtime') {
+                        fromResolutionResult()
+                    }
+                }
+                pom {
+                    name = 'Mantle Sponge 8'
+                    description = 'A Minecraft Command Framwork on top of ANTLR4'
+                    url = 'https://github.com/pietelite/mantle'
+                    licenses {
+                        license {
+                            name = 'MIT'
+                            url = 'https://opensource.org/licenses/MIT'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'pietelite'
+                            name = 'PietElite'
+                            url = 'https://pietelite.me'
+                            email = 'pietelite@gmail.com'
+                        }
+                    }
+                    scm {
+                        connection = 'scm:git:git://github.com/pietelite/mantle.git'
+                        developerConnection = 'scm:git:ssh://github.com:pietelite/mantle.git'
+                        url = 'https://github.com/pietelite/mantle'
+                    }
+                    issueManagement {
+                        system = 'GitHub'
+                        url = 'https://github.com/pietelite/mantle/issues'
+                    }
+                }
+            }
+        }
 
-    dependencies {
-        include(dependency('me.pietelite.mantle:.*'))
-        include(dependency('com.vmware.antlr4-c3:.*'))
+        signing {
+            useGpgCmd()
+            sign configurations.archives
+            sign publishing.publications.mavenJava
+            required = true
+        }
     }
-
-    relocate 'com.vmware.antlr4c3', 'me.pietelite.mantle.lib.antlr4c3'
-
 }

@@ -22,42 +22,46 @@
  * SOFTWARE.
  */
 
-package me.pietelite.mantle.common;
+package me.pietelite.mantle.bukkit;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.lang.reflect.Field;
+import me.pietelite.mantle.common.CommandRegistrar;
 import me.pietelite.mantle.common.connector.CommandConnector;
 import me.pietelite.mantle.common.connector.CommandRoot;
+import org.bukkit.Bukkit;
+import org.bukkit.command.CommandMap;
 
-public class CrustPlugin {
+class BukkitCommandRegistrar implements CommandRegistrar {
 
-  public static CrustPlugin instance;
-  private final Map<String, MantleCommand> commands = new HashMap<>();
-  public final Set<String> players = new HashSet<>();
-  public final Map<UUID, Set<String>> playerRestrictedPermissions = new HashMap<>();
+  private CommandMap commandMap;
 
-  public void registerCommand(CommandConnector connector) {
-    for (CommandRoot root : connector.roots()) {
-      commands.put(root.baseCommand(), new MantleCommand(connector, root));
+  public BukkitCommandRegistrar() {
+    Field commandMapField;
+    try {
+      commandMapField = Bukkit.getServer().getClass().getDeclaredField("commandMap");
+    } catch (NoSuchFieldException e) {
+      e.printStackTrace();
+      return;
+    }
+    commandMapField.setAccessible(true);
+    try {
+      commandMap = (CommandMap) commandMapField.get(Bukkit.getServer());
+    } catch (IllegalAccessException e) {
+      e.printStackTrace();
     }
   }
 
-  public CommandResult executeCommand(CommandSource source, String command) {
-    String[] tokens = command.split(" ", 2);
-    return commands.get(tokens[0]).process(source, tokens.length < 2 ? "" : tokens[1]);
-  }
-
-  public List<String> completeCommand(CommandSource source, String command) {
-    String[] tokens = command.split(" ", 2);
-    return commands.get(tokens[0]).complete(source, tokens.length < 2 ? "" : tokens[1]);
-  }
-
-  public void revokePermission(UUID playerUuid, String permission) {
-    this.playerRestrictedPermissions.computeIfAbsent(playerUuid, k -> new HashSet<>()).add(permission);
+  @Override
+  public void register(CommandConnector connector) {
+    if (commandMap == null) {
+      throw new RuntimeException("Bukkit commandMap could not be found");
+    }
+    for (CommandRoot root : connector.roots()) {
+      commandMap.register(root.baseCommand(), new BukkitMantleCommand(connector, root));
+      for (String alias : root.aliases()) {
+        commandMap.register(alias, root.baseCommand(), new BukkitMantleCommand(connector, root));
+      }
+    }
   }
 
 }

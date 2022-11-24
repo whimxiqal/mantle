@@ -22,42 +22,40 @@
  * SOFTWARE.
  */
 
-package me.pietelite.mantle.common;
+package me.pietelite.mantle.sponge8;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import me.pietelite.mantle.common.CommandRegistrar;
 import me.pietelite.mantle.common.connector.CommandConnector;
 import me.pietelite.mantle.common.connector.CommandRoot;
+import org.spongepowered.api.command.Command;
+import org.spongepowered.api.event.lifecycle.RegisterCommandEvent;
+import org.spongepowered.plugin.PluginContainer;
 
-public class CrustPlugin {
+class Sponge8CommandRegistrar implements CommandRegistrar {
 
-  public static CrustPlugin instance;
-  private final Map<String, MantleCommand> commands = new HashMap<>();
-  public final Set<String> players = new HashSet<>();
-  public final Map<UUID, Set<String>> playerRestrictedPermissions = new HashMap<>();
+  private final PluginContainer pluginContainer;
+  private final RegisterCommandEvent<Command.Raw> rawRegisterCommandEvent;
 
-  public void registerCommand(CommandConnector connector) {
+  public Sponge8CommandRegistrar(PluginContainer pluginContainer,
+                                 RegisterCommandEvent<Command.Raw> rawRegisterCommandEvent) {
+    this.pluginContainer = pluginContainer;
+    this.rawRegisterCommandEvent = rawRegisterCommandEvent;
+  }
+
+  @Override
+  public void register(CommandConnector connector) {
     for (CommandRoot root : connector.roots()) {
-      commands.put(root.baseCommand(), new MantleCommand(connector, root));
+      Sponge8MantleCommand command = new Sponge8MantleCommand(connector, root);
+      List<String> aliases = root.aliases();
+      String[] otherAliases = new String[0];
+      if (aliases != null) {
+        otherAliases = aliases.toArray(otherAliases);
+      }
+      rawRegisterCommandEvent.register(pluginContainer, command,
+          root.baseCommand(),
+          otherAliases);
     }
-  }
-
-  public CommandResult executeCommand(CommandSource source, String command) {
-    String[] tokens = command.split(" ", 2);
-    return commands.get(tokens[0]).process(source, tokens.length < 2 ? "" : tokens[1]);
-  }
-
-  public List<String> completeCommand(CommandSource source, String command) {
-    String[] tokens = command.split(" ", 2);
-    return commands.get(tokens[0]).complete(source, tokens.length < 2 ? "" : tokens[1]);
-  }
-
-  public void revokePermission(UUID playerUuid, String permission) {
-    this.playerRestrictedPermissions.computeIfAbsent(playerUuid, k -> new HashSet<>()).add(permission);
   }
 
 }

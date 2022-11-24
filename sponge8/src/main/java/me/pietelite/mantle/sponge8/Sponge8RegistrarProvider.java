@@ -22,42 +22,30 @@
  * SOFTWARE.
  */
 
-package me.pietelite.mantle.common;
+package me.pietelite.mantle.sponge8;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+import me.pietelite.mantle.common.CommandRegistrar;
+import me.pietelite.mantle.common.Mantle;
+import org.spongepowered.api.command.Command;
+import org.spongepowered.api.event.lifecycle.RegisterCommandEvent;
+import org.spongepowered.plugin.PluginContainer;
 
-public class CrustPlatformProxy implements Proxy {
+/**
+ * A static provider for a {@link CommandRegistrar} for Sponge API 8.
+ */
+public class Sponge8RegistrarProvider {
 
-  public static final List<String> PLAYERS = new LinkedList<>();
-
-  {
-    PLAYERS.add("PietElite");
-    PLAYERS.add("belkar1");
+  /**
+   * Get a {@link CommandRegistrar} for Sponge API 8 plugins.
+   *
+   * @param pluginContainer         the plugin container
+   * @param rawRegisterCommandEvent the raw command event with which commands are normally registered
+   * @return the registrar
+   */
+  public static CommandRegistrar get(PluginContainer pluginContainer,
+                                     RegisterCommandEvent<Command.Raw> rawRegisterCommandEvent) {
+    Mantle.setProxy(new Sponge8Proxy());
+    return new Sponge8CommandRegistrar(pluginContainer, rawRegisterCommandEvent);
   }
 
-
-  @Override
-  public Logger logger() {
-    return new TestLogger();
-  }
-
-  @Override
-  public boolean hasPermission(UUID playerUuid, String permission) {
-    return !CrustPlugin.instance.playerRestrictedPermissions.containsKey(playerUuid) ||
-        !CrustPlugin.instance.playerRestrictedPermissions.get(playerUuid).contains(permission);
-  }
-
-  @Override
-  public List<String> onlinePlayerNames() {
-    return PLAYERS;
-  }
-
-  @Override
-  public List<String> worldNames() {
-    return Collections.emptyList();
-  }
 }

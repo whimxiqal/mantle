@@ -22,42 +22,14 @@
  * SOFTWARE.
  */
 
-package me.pietelite.mantle.common;
+package me.pietelite.mantle.bukkit;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+import me.pietelite.mantle.common.Logger;
+import org.bukkit.Bukkit;
 
-public class CrustPlatformProxy implements Proxy {
-
-  public static final List<String> PLAYERS = new LinkedList<>();
-
-  {
-    PLAYERS.add("PietElite");
-    PLAYERS.add("belkar1");
-  }
-
-
+class BukkitLogger implements Logger {
   @Override
-  public Logger logger() {
-    return new TestLogger();
-  }
-
-  @Override
-  public boolean hasPermission(UUID playerUuid, String permission) {
-    return !CrustPlugin.instance.playerRestrictedPermissions.containsKey(playerUuid) ||
-        !CrustPlugin.instance.playerRestrictedPermissions.get(playerUuid).contains(permission);
-  }
-
-  @Override
-  public List<String> onlinePlayerNames() {
-    return PLAYERS;
-  }
-
-  @Override
-  public List<String> worldNames() {
-    return Collections.emptyList();
+  public void error(String message) {
+    Bukkit.getLogger().severe(message);
   }
 }

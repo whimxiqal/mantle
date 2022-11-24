@@ -22,42 +22,31 @@
  * SOFTWARE.
  */
 
-package me.pietelite.mantle.common;
+package me.pietelite.mantle.bukkit;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+import me.pietelite.mantle.common.CommandRegistrar;
+import me.pietelite.mantle.common.Mantle;
+import org.bukkit.plugin.java.JavaPlugin;
 
-public class CrustPlatformProxy implements Proxy {
+/**
+ * A static provider for a {@link CommandRegistrar} for Bukkit.
+ */
+public final class BukkitRegistrarProvider {
 
-  public static final List<String> PLAYERS = new LinkedList<>();
-
-  {
-    PLAYERS.add("PietElite");
-    PLAYERS.add("belkar1");
+  private BukkitRegistrarProvider() {
   }
 
-
-  @Override
-  public Logger logger() {
-    return new TestLogger();
+  /**
+   * Get a {@link CommandRegistrar} for Bukkit plugins.
+   *
+   * @param plugin the plugin
+   * @return a registrar with which to register commands
+   */
+  public static CommandRegistrar get(JavaPlugin plugin) {
+    BukkitProxy proxy = new BukkitProxy();
+    proxy.initialize(plugin);
+    Mantle.setProxy(proxy);
+    return new BukkitCommandRegistrar();
   }
 
-  @Override
-  public boolean hasPermission(UUID playerUuid, String permission) {
-    return !CrustPlugin.instance.playerRestrictedPermissions.containsKey(playerUuid) ||
-        !CrustPlugin.instance.playerRestrictedPermissions.get(playerUuid).contains(permission);
-  }
-
-  @Override
-  public List<String> onlinePlayerNames() {
-    return PLAYERS;
-  }
-
-  @Override
-  public List<String> worldNames() {
-    return Collections.emptyList();
-  }
 }

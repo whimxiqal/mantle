@@ -1,29 +1,22 @@
 plugins {
-    id 'antlr'
+    id 'java'
+    id 'java-library'
+}
+
+repositories {
+    maven {
+        url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+    }
 }
 
 dependencies {
+    compileOnly project(':common')
+    compileOnly 'org.bukkit:bukkit:1.12-R0.1-SNAPSHOT'
 
-    // https://mvnrepository.com/artifact/org.antlr/antlr
-    antlr 'org.antlr:antlr4:4.9.3'
-
-    // https://mvnrepository.com/artifact/net.kyori/adventure-api
-    api 'net.kyori:adventure-api:4.11.0'
-    api 'net.kyori:adventure-text-serializer-plain:4.11.0'
-
-    // https://mvnrepository.com/artifact/com.vmware.antlr4-c3/antlr4-c3
-    // Internally used for command completion
-    implementation 'com.vmware.antlr4-c3:antlr4-c3:1.1'
-
+    implementation "net.kyori:adventure-platform-bukkit:4.1.2"
+    implementation 'net.kyori:adventure-text-serializer-legacy:4.11.0'
 }
 
-test {
-    useJUnitPlatform()
-}
-
-generateTestGrammarSource {
-    arguments += ["-visitor", "-lib", "src/test/antlr/me/pietelite/mantle/common", "-package", "me.pietelite.mantle.common"]
-}
 
 if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword') && project.ext.publish) {
     apply plugin: 'maven-publish'
@@ -45,7 +38,7 @@ if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePass
         publications {
             mavenJava(MavenPublication) {
                 groupId = 'me.pietelite.mantle'
-                artifactId = 'common'
+                artifactId = 'bukkit'
                 version = project.ext.fullVersion
                 from components.java
                 versionMapping {
@@ -57,7 +50,7 @@ if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePass
                     }
                 }
                 pom {
-                    name = 'Mantle Common'
+                    name = 'Mantle Bukkit'
                     description = 'A Minecraft Command Framwork on top of ANTLR4'
                     url = 'https://github.com/pietelite/mantle'
                     licenses {

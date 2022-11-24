@@ -1,44 +1,45 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) Pieter Svenson
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package me.pietelite.mantle.common;
 
-public class Mantle {
+/**
+ * Static class to get global state.
+ */
+public final class Mantle {
 
   private static Proxy proxy;
-  private static CommandSession currentSession;
+
+  private Mantle() {
+  }
 
   public static Proxy getProxy() {
     return proxy;
   }
 
-  static void setProxy(Proxy proxy) {
+  public static void setProxy(Proxy proxy) {
     Mantle.proxy = proxy;
-  }
-
-  public static CommandSession session() {
-    return currentSession;
-  }
-
-  static void setSession(CommandSession currentSession) {
-    Mantle.currentSession = currentSession;
-  }
-
-  /**
-   * Helper method to determine whether the source in {@link #session()} has permission for the
-   * given permission string, according to the {@link Proxy} at {@link #getProxy()}.
-   *
-   * @param permission the permission
-   * @return true if the session's source has permission
-   */
-  static boolean sourceHasPermission(String permission) {
-    CommandSource source = session().getSource();
-    switch (source.getType()) {
-      case CONSOLE:
-      case UNKNOWN:
-        return true;
-      case PLAYER:
-        return getProxy().hasPermission(source.getUuid(), permission);
-      default:
-        throw new RuntimeException();
-    }
   }
 
 }

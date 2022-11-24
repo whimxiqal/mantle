@@ -24,21 +24,23 @@
 
 package me.pietelite.mantle.common;
 
-import java.util.Map;
+import java.util.Optional;
+import java.util.Stack;
+import me.pietelite.mantle.common.connector.HelpCommandInfo;
+import net.kyori.adventure.text.Component;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-class PermissionListener implements ParseTreeListener {
+@SuppressWarnings("checkstyle:MissingJavadocType")
+public class DescriptionListener implements ParseTreeListener {
 
-  private final CommandSource source;
-  private final Map<Integer, String> rulePermissions;
-  private boolean allowed = true;
+  private final HelpCommandInfo info;
+  private final Stack<Integer> ruleStack = new Stack<>();
 
-  public PermissionListener(CommandSource source, Map<Integer, String> rulePermissions) {
-    this.source = source;
-    this.rulePermissions = rulePermissions;
+  public DescriptionListener(HelpCommandInfo info) {
+    this.info = info;
   }
 
   @Override
@@ -53,7 +55,10 @@ class PermissionListener implements ParseTreeListener {
 
   @Override
   public void enterEveryRule(ParserRuleContext ctx) {
-    evaluatePermission(ctx.getRuleIndex(), rulePermissions);
+    if (ctx == null) {
+      return;
+    }
+    ruleStack.push(ctx.getRuleIndex());
   }
 
   @Override
@@ -61,14 +66,14 @@ class PermissionListener implements ParseTreeListener {
     // ignore
   }
 
-  public boolean isAllowed() {
-    return allowed;
-  }
-
-  private void evaluatePermission(int index, Map<Integer, String> permissionMap) {
-    String permission = permissionMap.get(index);
-    if (permission != null && !source.hasPermission(permission)) {
-      allowed = false;
+  Optional<Component> description() {
+    while (!ruleStack.isEmpty()) {
+      int rule = ruleStack.pop();
+      if (info.ignored().contains(rule)) {
+        continue;
+      }
+      return Optional.ofNullable(info.descriptions().get(rule));
     }
+    return Optional.empty();
   }
 }

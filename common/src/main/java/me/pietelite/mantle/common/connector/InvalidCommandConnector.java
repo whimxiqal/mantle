@@ -22,42 +22,19 @@
  * SOFTWARE.
  */
 
-package me.pietelite.mantle.common;
+package me.pietelite.mantle.common.connector;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+/**
+ * Exception for when an invalid connector is given into Mantle.
+ */
+public class InvalidCommandConnector extends RuntimeException {
 
-public class CrustPlatformProxy implements Proxy {
-
-  public static final List<String> PLAYERS = new LinkedList<>();
-
-  {
-    PLAYERS.add("PietElite");
-    PLAYERS.add("belkar1");
+  public InvalidCommandConnector() {
+    super();
   }
 
-
-  @Override
-  public Logger logger() {
-    return new TestLogger();
+  public InvalidCommandConnector(String message) {
+    super(message);
   }
 
-  @Override
-  public boolean hasPermission(UUID playerUuid, String permission) {
-    return !CrustPlugin.instance.playerRestrictedPermissions.containsKey(playerUuid) ||
-        !CrustPlugin.instance.playerRestrictedPermissions.get(playerUuid).contains(permission);
-  }
-
-  @Override
-  public List<String> onlinePlayerNames() {
-    return PLAYERS;
-  }
-
-  @Override
-  public List<String> worldNames() {
-    return Collections.emptyList();
-  }
 }

@@ -24,40 +24,18 @@
 
 package me.pietelite.mantle.common;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+/**
+ * A builder of another object.
+ *
+ * @param <T> the object type to build
+ */
+public interface Builder<T> {
 
-public class CrustPlatformProxy implements Proxy {
+  /**
+   * Build the object.
+   *
+   * @return the built object
+   */
+  T build();
 
-  public static final List<String> PLAYERS = new LinkedList<>();
-
-  {
-    PLAYERS.add("PietElite");
-    PLAYERS.add("belkar1");
-  }
-
-
-  @Override
-  public Logger logger() {
-    return new TestLogger();
-  }
-
-  @Override
-  public boolean hasPermission(UUID playerUuid, String permission) {
-    return !CrustPlugin.instance.playerRestrictedPermissions.containsKey(playerUuid) ||
-        !CrustPlugin.instance.playerRestrictedPermissions.get(playerUuid).contains(permission);
-  }
-
-  @Override
-  public List<String> onlinePlayerNames() {
-    return PLAYERS;
-  }
-
-  @Override
-  public List<String> worldNames() {
-    return Collections.emptyList();
-  }
 }
