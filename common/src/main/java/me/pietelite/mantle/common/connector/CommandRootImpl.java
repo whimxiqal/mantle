@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import net.kyori.adventure.text.Component;
 
+@SuppressWarnings("checkstyle:MissingJavadocType")
 public class CommandRootImpl implements CommandRoot {
 
   private final String baseCommand;

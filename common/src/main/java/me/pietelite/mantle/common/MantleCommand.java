@@ -32,10 +32,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import me.pietelite.mantle.common.connector.CommandConnector;
 import me.pietelite.mantle.common.connector.CommandRoot;
@@ -54,13 +50,17 @@ import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+/**
+ * A command represented only in Mantle terms.
+ * A Mantle Command is meant to be converted into a command understood by mod platforms.
+ */
 public class MantleCommand {
 
   private static final List<String> HELP_COMMAND_ARGS = new LinkedList<>();
   private final CommandConnector connector;
   private final CommandRoot root;
 
-  {
+  static {
     HELP_COMMAND_ARGS.add("?");
     HELP_COMMAND_ARGS.add("help");
   }
@@ -74,6 +74,7 @@ public class MantleCommand {
     return connector;
   }
 
+  @SuppressWarnings("checkstyle:MissingJavadocMethod")
   public final CommandResult process(CommandSource source, String justArguments) {
     String arguments = root.baseCommand() + " " + justArguments;
     if (executeHelpCommand(source, arguments)) {
@@ -112,9 +113,10 @@ public class MantleCommand {
     return result;
   }
 
+  @SuppressWarnings("checkstyle:MissingJavadocMethod")
   public final synchronized List<String> complete(CommandSource source, String justArguments) {
     String arguments = root.baseCommand() + " " + justArguments;
-    boolean argumentsEndInWhitespace = Character.isWhitespace(arguments.charAt(arguments.length() - 1));
+    final boolean argumentsEndInWhitespace = Character.isWhitespace(arguments.charAt(arguments.length() - 1));
     String trimmedArgs = arguments.trim();
     CharStream input = CharStreams.fromString(trimmedArgs);
 
@@ -135,8 +137,11 @@ public class MantleCommand {
     return completionsFor(source, parser, parseTree, trimmedArgs, argumentsEndInWhitespace);
   }
 
-  private List<String> completionsFor(CommandSource source, Parser parser, ParserRuleContext parseTree, String arguments, boolean argumentsEndInWhitespace) {
-    CodeCompletionCore core = new CodeCompletionCore(parser, connector.completionInfo().completableRules(), connector.completionInfo().ignoredCompletionTokens());
+  private List<String> completionsFor(CommandSource source, Parser parser, ParserRuleContext parseTree,
+                                      String arguments, boolean argumentsEndInWhitespace) {
+    CodeCompletionCore core = new CodeCompletionCore(parser,
+        connector.completionInfo().completableRules(),
+        connector.completionInfo().ignoredCompletionTokens());
 
     CaretTokenIndexResult caretTokenIndexResult;
     if (arguments.isEmpty()) {
@@ -169,16 +174,17 @@ public class MantleCommand {
         .forEach(possibleCompletions::add);
 
     // Rules
-//    for (int completableRule : connector.completionInfo().completableRules()) {
-//      System.out.println("")
-//    }
-    int completableIndex = collection.rulePositions.size(); // the index of the rule we want to complete is the one after already completed ones
+    // the index of the rule we want to complete is the one after already completed ones
+    int completableIndex = collection.rulePositions.size();
     for (Map.Entry<Integer, List<Integer>> rule : collection.rules.entrySet()) {
       if (rule.getValue().isEmpty()) {
         continue;
       }
       int caller = rule.getValue().get(rule.getValue().size() - 1);  // caller is the last one in the stack
-      possibleCompletions.addAll(connector.completionInfo().completionsFor(source, caller, rule.getKey(), completableIndex));
+      possibleCompletions.addAll(connector.completionInfo().completionsFor(source,
+          caller,
+          rule.getKey(),
+          completableIndex));
     }
     return possibleCompletions.stream()
         .filter(s -> s.toLowerCase(Locale.ROOT).startsWith(currentText.toLowerCase(Locale.ENGLISH)))
@@ -281,9 +287,7 @@ public class MantleCommand {
       RuleRejectionsListener rejectionsListener = new RuleRejectionsListener(connector.playerOnlyCommands());
       walker = new ParseTreeWalker();
       walker.walk(rejectionsListener, parseTree);
-      if (rejectionsListener.rejected()) {
-        return true;
-      }
+      return rejectionsListener.rejected();
     }
     return false;
   }

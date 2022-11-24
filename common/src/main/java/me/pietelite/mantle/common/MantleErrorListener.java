@@ -39,23 +39,27 @@ class MantleErrorListener implements ANTLRErrorListener {
   private String message;
 
   @Override
-  public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
+  public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line,
+                          int charPositionInLine, String msg, RecognitionException e) {
     this.error = true;
     message = msg;
   }
 
   @Override
-  public void reportAmbiguity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, boolean exact, BitSet ambigAlts, ATNConfigSet configs) {
+  public void reportAmbiguity(Parser recognizer, DFA dfa, int startIndex, int stopIndex,
+                              boolean exact, BitSet ambigAlts, ATNConfigSet configs) {
     this.error = true;
   }
 
   @Override
-  public void reportAttemptingFullContext(Parser recognizer, DFA dfa, int startIndex, int stopIndex, BitSet conflictingAlts, ATNConfigSet configs) {
+  public void reportAttemptingFullContext(Parser recognizer, DFA dfa, int startIndex,
+                                          int stopIndex, BitSet conflictingAlts, ATNConfigSet configs) {
     this.error = true;
   }
 
   @Override
-  public void reportContextSensitivity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, int prediction, ATNConfigSet configs) {
+  public void reportContextSensitivity(Parser recognizer, DFA dfa, int startIndex,
+                                       int stopIndex, int prediction, ATNConfigSet configs) {
     this.error = true;
   }
 

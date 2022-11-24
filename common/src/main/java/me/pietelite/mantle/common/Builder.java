@@ -24,15 +24,18 @@
 
 package me.pietelite.mantle.common;
 
-public class CommandSession {
+/**
+ * A builder of another object.
+ *
+ * @param <T> the object type to build
+ */
+public interface Builder<T> {
 
-  private final CommandSource source;
+  /**
+   * Build the object.
+   *
+   * @return the built object
+   */
+  T build();
 
-  public CommandSession(CommandSource source) {
-    this.source = source;
-  }
-
-  public CommandSource getSource() {
-    return source;
-  }
 }

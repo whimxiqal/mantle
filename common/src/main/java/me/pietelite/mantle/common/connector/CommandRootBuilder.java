@@ -2,13 +2,17 @@ package me.pietelite.mantle.common.connector;
 
 import java.util.LinkedList;
 import java.util.List;
+import me.pietelite.mantle.common.Builder;
 import net.kyori.adventure.text.Component;
 
-public class CommandRootBuilder {
+/**
+ * A builder for a {@link CommandRoot}.
+ */
+public class CommandRootBuilder implements Builder<CommandRoot> {
 
   private final String baseCommand;
-  private Component description;
   private final List<String> aliases = new LinkedList<>();
+  private Component description;
 
   public CommandRootBuilder(String baseCommand) {
     this.baseCommand = baseCommand;

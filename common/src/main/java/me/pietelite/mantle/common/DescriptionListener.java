@@ -33,6 +33,7 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+@SuppressWarnings("checkstyle:MissingJavadocType")
 public class DescriptionListener implements ParseTreeListener {
 
   private final HelpCommandInfo info;

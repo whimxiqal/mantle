@@ -27,12 +27,9 @@ package me.pietelite.mantle.common.connector;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import me.pietelite.mantle.common.CommandSource;
 import me.pietelite.mantle.common.Mantle;
 import org.jetbrains.annotations.Nullable;
@@ -60,7 +57,10 @@ class CompletionInfoImpl implements CompletionInfo {
   }
 
   @Override
-  public Collection<String> completionsFor(CommandSource source, int callerRule, int completableRule, int completableIndex) {
+  public Collection<String> completionsFor(CommandSource source,
+                                           int callerRule,
+                                           int completableRule,
+                                           int completableIndex) {
     Map<Integer, Map<Integer, String>> completionTable1 = completionTable.get(completableRule);
     if (completionTable1 == null) {
       return Collections.emptyList();

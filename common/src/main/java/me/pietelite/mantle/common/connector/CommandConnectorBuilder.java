@@ -35,18 +35,26 @@ import me.pietelite.mantle.common.CommandExecutor;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
 
+/**
+ * Builder for a {@link CommandConnector}.
+ */
 public class CommandConnectorBuilder {
 
   private final List<CommandRoot> roots = new LinkedList<>();
   private final Map<Integer, String> rulePermissions = new HashMap<>();
+  private final Set<Integer> playerOnlyCommands = new HashSet<>();
   private Class<? extends Lexer> lexerClass;
   private Class<? extends Parser> parserClass;
   private CommandExecutor executor;
   private HelpCommandInfo helpCommandInfo;
   private CompletionInfo completionInfo;
-  private final Set<Integer> playerOnlyCommands = new HashSet<>();
   private boolean useDefaultParseError = true;
 
+  /**
+   * Build {@link CommandConnector}.
+   *
+   * @return the connector
+   */
   public CommandConnector build() {
     if (roots.isEmpty()) {
       throw new InvalidCommandConnector("There must be at least one command root");
@@ -99,6 +107,7 @@ public class CommandConnectorBuilder {
     return this;
   }
 
+  @SuppressWarnings("checkstyle:MissingJavadocMethod")
   public CommandConnectorBuilder addPermission(int rule, String permission) {
     if (rulePermissions.putIfAbsent(rule, permission) != null) {
       throw new IllegalArgumentException("There already exists a permission for rule number " + rule);

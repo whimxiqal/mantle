@@ -37,7 +37,8 @@ class Sponge8CommandRegistrar implements CommandRegistrar {
   private final PluginContainer pluginContainer;
   private final RegisterCommandEvent<Command.Raw> rawRegisterCommandEvent;
 
-  public Sponge8CommandRegistrar(PluginContainer pluginContainer, RegisterCommandEvent<Command.Raw> rawRegisterCommandEvent) {
+  public Sponge8CommandRegistrar(PluginContainer pluginContainer,
+                                 RegisterCommandEvent<Command.Raw> rawRegisterCommandEvent) {
     this.pluginContainer = pluginContainer;
     this.rawRegisterCommandEvent = rawRegisterCommandEvent;
   }

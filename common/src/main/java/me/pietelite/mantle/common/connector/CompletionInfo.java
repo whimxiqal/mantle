@@ -29,6 +29,9 @@ import java.util.Set;
 import me.pietelite.mantle.common.CommandSource;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Information about how Mantle should complete partial input for dynamic parameters.
+ */
 public interface CompletionInfo {
 
   static CompletionInfoBuilder builder() {
@@ -47,6 +50,7 @@ public interface CompletionInfo {
    * get completions for the player identifier with <code>completionsFor(5, 8, 0)</code> and get
    * completions for the color identifier with <code>completionsFor(5, 8, 1)</code>.
    *
+   * @param source           the command source
    * @param callerRule       the rule which is called during completion
    * @param completableRule  the rule which is being completed
    * @param completableIndex the index in the list of completable rules

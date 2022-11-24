@@ -33,7 +33,7 @@ import me.pietelite.mantle.common.Mantle;
 import me.pietelite.mantle.common.MantleCommand;
 import me.pietelite.mantle.common.connector.CommandConnector;
 import me.pietelite.mantle.common.connector.CommandRoot;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -43,7 +43,7 @@ final class BukkitMantleCommand extends Command {
 
   private final MantleCommand mantleCommand;
   private final CommandRoot root;
-  private final PlainTextComponentSerializer componentSerializer = PlainTextComponentSerializer.plainText();
+  private final LegacyComponentSerializer componentSerializer = LegacyComponentSerializer.legacyAmpersand();
 
   public BukkitMantleCommand(CommandConnector connector, CommandRoot root) {
     super(root.baseCommand());
@@ -63,7 +63,8 @@ final class BukkitMantleCommand extends Command {
 
   @Override
   public boolean execute(CommandSender sender, String commandLabel, String[] args) {
-    return mantleCommand.process(convertSender(sender), String.join(" ", Arrays.asList(args))).type() == CommandResult.Type.SUCCESS;
+    return mantleCommand.process(convertSender(sender), String.join(" ", Arrays.asList(args))).type()
+        == CommandResult.Type.SUCCESS;
   }
 
   @Override
@@ -74,9 +75,11 @@ final class BukkitMantleCommand extends Command {
   private CommandSource convertSender(CommandSender sender) {
     if (sender instanceof Player) {
       UUID uuid = ((Player) sender).getUniqueId();
-      return new CommandSource(CommandSource.Type.PLAYER, uuid, ((BukkitProxy) Mantle.getProxy()).adventure().sender(sender));
+      return new CommandSource(CommandSource.Type.PLAYER, uuid,
+          ((BukkitProxy) Mantle.getProxy()).adventure().sender(sender));
     } else if (sender instanceof ConsoleCommandSender) {
-      return new CommandSource(CommandSource.Type.CONSOLE, null, ((BukkitProxy) Mantle.getProxy()).adventure().sender(sender));
+      return new CommandSource(CommandSource.Type.CONSOLE, null,
+          ((BukkitProxy) Mantle.getProxy()).adventure().sender(sender));
     }
     return CommandSource.unknown();
   }

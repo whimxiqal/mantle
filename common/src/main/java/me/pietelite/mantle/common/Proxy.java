@@ -27,8 +27,10 @@ package me.pietelite.mantle.common;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
-import org.jetbrains.annotations.Nullable;
 
+/**
+ * An object to store platform-specific information.
+ */
 public interface Proxy {
 
   Logger logger();

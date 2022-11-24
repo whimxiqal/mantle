@@ -59,22 +59,65 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.TokenStream;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * A connector with which you may link your ANTLR implementation files
+ * with general other command information.
+ */
 public interface CommandConnector {
 
+  /**
+   * Get a builder for a {@link CommandConnector}.
+   *
+   * @return a builder
+   */
   static CommandConnectorBuilder builder() {
     return new CommandConnectorBuilder();
   }
 
+  /**
+   * The roots that each represent the base of a command tree.
+   *
+   * @return command roots
+   */
   Collection<CommandRoot> roots();
 
+  /**
+   * The ANTLR lexer associated with all commands.
+   *
+   * @param input char stream
+   * @return the ANTLR lexer
+   */
   Lexer lexer(CharStream input);
 
+  /**
+   * The ANTLR parser associated with all commands.
+   *
+   * @param tokenStream token stream
+   * @return the parser
+   */
   Parser parser(TokenStream tokenStream);
 
+  /**
+   * The command executor, which executes command behavior.
+   *
+   * @return the executor
+   */
   CommandExecutor executor();
 
+  /**
+   * Information about what to tell users about how to use commands.
+   *
+   * @return the help command info
+   */
   @Nullable HelpCommandInfo helpCommandInfo();
 
+  /**
+   * A getter for the base parser rule context from the parser, given a certain command root.
+   *
+   * @param parser the parser
+   * @param root   the command root
+   * @return the context
+   */
   ParserRuleContext baseContext(Parser parser, CommandRoot root);
 
   /**
@@ -86,10 +129,25 @@ public interface CommandConnector {
    */
   Map<Integer, String> rulePermissions();
 
+  /**
+   * Information about how to complete partial commands whilst typing.
+   *
+   * @return completion info
+   */
   CompletionInfo completionInfo();
 
+  /**
+   * A set of all rule ids that represent player-only commands.
+   *
+   * @return player only commands
+   */
   Set<Integer> playerOnlyCommands();
 
+  /**
+   * True if the default parse error should be used when parsing fails.
+   *
+   * @return if default parser error is used
+   */
   boolean useDefaultParseError();
 
 }

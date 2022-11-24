@@ -24,9 +24,15 @@
 
 package me.pietelite.mantle.common;
 
-public class Mantle {
+/**
+ * Static class to get global state.
+ */
+public final class Mantle {
 
   private static Proxy proxy;
+
+  private Mantle() {
+  }
 
   public static Proxy getProxy() {
     return proxy;

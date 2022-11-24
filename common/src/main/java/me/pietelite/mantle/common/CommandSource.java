@@ -27,17 +27,10 @@ package me.pietelite.mantle.common;
 import java.util.UUID;
 import net.kyori.adventure.audience.Audience;
 
-public class CommandSource {
-
-  public static CommandSource unknown() {
-    return new CommandSource(Type.UNKNOWN, null, Audience.empty());
-  }
-
-  public enum Type {
-    CONSOLE,
-    PLAYER,
-    UNKNOWN
-  }
+/**
+ * The source of a command.
+ */
+public final class CommandSource {
 
   private final Type type;
   private final UUID uuid;
@@ -47,6 +40,10 @@ public class CommandSource {
     this.type = type;
     this.uuid = uuid;
     this.audience = audience;
+  }
+
+  public static CommandSource unknown() {
+    return new CommandSource(Type.UNKNOWN, null, Audience.empty());
   }
 
   public Type type() {
@@ -61,6 +58,12 @@ public class CommandSource {
     return audience;
   }
 
+  /**
+   * Determine whether this command source has the given permission.
+   *
+   * @param permission the permission
+   * @return true if permission is granted
+   */
   public boolean hasPermission(String permission) {
     switch (type()) {
       case CONSOLE:
@@ -71,5 +74,14 @@ public class CommandSource {
       default:
         throw new RuntimeException();
     }
+  }
+
+  /**
+   * The type of entity that is acting as a command source.
+   */
+  public enum Type {
+    CONSOLE,
+    PLAYER,
+    UNKNOWN
   }
 }

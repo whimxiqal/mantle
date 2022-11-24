@@ -25,7 +25,11 @@
 package me.pietelite.mantle.bukkit;
 
 import me.pietelite.mantle.common.Logger;
+import org.bukkit.Bukkit;
 
 class BukkitLogger implements Logger {
-
+  @Override
+  public void error(String message) {
+    Bukkit.getLogger().severe(message);
+  }
 }

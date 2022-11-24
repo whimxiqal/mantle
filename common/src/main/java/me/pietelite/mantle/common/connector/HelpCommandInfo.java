@@ -28,16 +28,36 @@ import java.util.Map;
 import java.util.Set;
 import net.kyori.adventure.text.Component;
 
+/**
+ * General information about a help command.
+ * A help command sends information to the user about how to use a command.
+ */
 public interface HelpCommandInfo {
 
   static HelpCommandInfoBuilder builder() {
     return new HelpCommandInfoBuilder();
   }
 
+  /**
+   * The header of the help command.
+   *
+   * @return the header
+   */
   Component header();
 
+  /**
+   * All descriptions, keyed underneath the indexes of their corresponding parser rules.
+   *
+   * @return the descriptions
+   */
   Map<Integer, Component> descriptions();
 
+  /**
+   * Get all ignored rules. These rules should not be considered when looking up descriptions,
+   * and the description and information about a higher-level command should be given instead.
+   *
+   * @return ignored rules
+   */
   Set<Integer> ignored();
 
 }

@@ -1,6 +1,6 @@
 plugins {
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
     id 'java'
+    id 'java-library'
 }
 
 repositories {
@@ -10,18 +10,81 @@ repositories {
 }
 
 dependencies {
-    implementation project(':common')
-
-    shadow "net.kyori:adventure-platform-bukkit:4.1.2"
-    shadow 'net.kyori:adventure-text-serializer-legacy:4.11.0'
-    shadow 'net.kyori:adventure-text-serializer-plain:4.11.0'
-
+    compileOnly project(':common')
     compileOnly 'org.bukkit:bukkit:1.12-R0.1-SNAPSHOT'
 
+    implementation "net.kyori:adventure-platform-bukkit:4.1.2"
+    implementation 'net.kyori:adventure-text-serializer-legacy:4.11.0'
 }
 
-test {
-    useJUnitPlatform()
-}
 
-jar.enabled = true
+if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword') && project.ext.publish) {
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+
+    publishing {
+        repositories {
+            maven {
+                name = "sonatype"
+                url = project.ext.snapshot
+                        ? "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                        : "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                credentials {
+                    username sonatypeUsername
+                    password sonatypePassword
+                }
+            }
+        }
+        publications {
+            mavenJava(MavenPublication) {
+                groupId = 'me.pietelite.mantle'
+                artifactId = 'bukkit'
+                version = project.ext.fullVersion
+                from components.java
+                versionMapping {
+                    usage('java-api') {
+                        fromResolutionOf('runtimeClasspath')
+                    }
+                    usage('java-runtime') {
+                        fromResolutionResult()
+                    }
+                }
+                pom {
+                    name = 'Mantle Bukkit'
+                    description = 'A Minecraft Command Framwork on top of ANTLR4'
+                    url = 'https://github.com/pietelite/mantle'
+                    licenses {
+                        license {
+                            name = 'MIT'
+                            url = 'https://opensource.org/licenses/MIT'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'pietelite'
+                            name = 'PietElite'
+                            url = 'https://pietelite.me'
+                            email = 'pietelite@gmail.com'
+                        }
+                    }
+                    scm {
+                        connection = 'scm:git:git://github.com/pietelite/mantle.git'
+                        developerConnection = 'scm:git:ssh://github.com:pietelite/mantle.git'
+                        url = 'https://github.com/pietelite/mantle'
+                    }
+                    issueManagement {
+                        system = 'GitHub'
+                        url = 'https://github.com/pietelite/mantle/issues'
+                    }
+                }
+            }
+        }
+
+        signing {
+            useGpgCmd()
+            sign configurations.archives
+            sign publishing.publications.mavenJava
+            required = true
+        }
+    }
+}

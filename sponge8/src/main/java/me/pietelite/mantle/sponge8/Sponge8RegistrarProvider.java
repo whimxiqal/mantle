@@ -30,9 +30,20 @@ import org.spongepowered.api.command.Command;
 import org.spongepowered.api.event.lifecycle.RegisterCommandEvent;
 import org.spongepowered.plugin.PluginContainer;
 
+/**
+ * A static provider for a {@link CommandRegistrar} for Sponge API 8.
+ */
 public class Sponge8RegistrarProvider {
 
-  public static CommandRegistrar get(PluginContainer pluginContainer, RegisterCommandEvent<Command.Raw> rawRegisterCommandEvent) {
+  /**
+   * Get a {@link CommandRegistrar} for Sponge API 8 plugins.
+   *
+   * @param pluginContainer         the plugin container
+   * @param rawRegisterCommandEvent the raw command event with which commands are normally registered
+   * @return the registrar
+   */
+  public static CommandRegistrar get(PluginContainer pluginContainer,
+                                     RegisterCommandEvent<Command.Raw> rawRegisterCommandEvent) {
     Mantle.setProxy(new Sponge8Proxy());
     return new Sponge8CommandRegistrar(pluginContainer, rawRegisterCommandEvent);
   }

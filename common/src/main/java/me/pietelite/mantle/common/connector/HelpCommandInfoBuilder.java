@@ -28,15 +28,20 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import me.pietelite.mantle.common.Builder;
 import net.kyori.adventure.text.Component;
 
-public class HelpCommandInfoBuilder {
+/**
+ * A builder for a {@link HelpCommandInfo}.
+ */
+public class HelpCommandInfoBuilder implements Builder<HelpCommandInfo> {
 
   private static final Component DEFAULT_HEADER = Component.text("Command Information...");
   private final Map<Integer, Component> descriptions = new HashMap<>();
   private final Set<Integer> ignored = new HashSet<>();
   private Component header;
 
+  @Override
   public HelpCommandInfo build() {
     if (header == null) {
       header = DEFAULT_HEADER;
@@ -46,11 +51,24 @@ public class HelpCommandInfoBuilder {
         ignored);
   }
 
+  /**
+   * Set the header of all command info messages.
+   *
+   * @param header the header
+   * @return the builder, for chaining
+   */
   public HelpCommandInfoBuilder setHeader(Component header) {
     this.header = header;
     return this;
   }
 
+  /**
+   * Add a description for a rule.
+   *
+   * @param rule        the rule
+   * @param description the description
+   * @return the builder, for chaining
+   */
   public HelpCommandInfoBuilder addDescription(int rule, Component description) {
     if (descriptions.putIfAbsent(rule, description) != null) {
       throw new IllegalArgumentException("A description for rule " + rule + " has already been added.");
@@ -58,6 +76,14 @@ public class HelpCommandInfoBuilder {
     return this;
   }
 
+  /**
+   * Add ignored rules.
+   * These rules should not be considered when looking up descriptions,
+   * and the description and information about a higher-level command should be given instead.
+   *
+   * @param rule the rule
+   * @return the builder, for chaining
+   */
   public HelpCommandInfoBuilder addIgnored(int rule) {
     if (!ignored.add(rule)) {
       throw new IllegalArgumentException("The rule " + rule + " is already ignored.");

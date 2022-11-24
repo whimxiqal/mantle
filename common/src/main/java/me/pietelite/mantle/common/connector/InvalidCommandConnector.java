@@ -24,6 +24,9 @@
 
 package me.pietelite.mantle.common.connector;
 
+/**
+ * Exception for when an invalid connector is given into Mantle.
+ */
 public class InvalidCommandConnector extends RuntimeException {
 
   public InvalidCommandConnector() {

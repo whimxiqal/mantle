@@ -30,6 +30,10 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+/**
+ * Generic parse tree listener just for determining whether a certain parse tree should be rejected given
+ * a set or rejected rules by traversing the tree and flagging when a rejected rule shows up.
+ */
 public class RuleRejectionsListener implements ParseTreeListener {
 
   private final Set<Integer> ruleRejections;

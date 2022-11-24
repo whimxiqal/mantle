@@ -27,9 +27,9 @@ package me.pietelite.mantle.sponge8;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import me.pietelite.mantle.common.connector.CommandConnector;
 import me.pietelite.mantle.common.CommandSource;
 import me.pietelite.mantle.common.MantleCommand;
+import me.pietelite.mantle.common.connector.CommandConnector;
 import me.pietelite.mantle.common.connector.CommandRoot;
 import net.kyori.adventure.text.Component;
 import org.spongepowered.api.Server;
@@ -80,9 +80,13 @@ final class Sponge8MantleCommand extends MantleCommand implements Command.Raw {
 
   private CommandSource convertCause(CommandCause cause) {
     if (cause.root() instanceof Server) {
-      return new CommandSource(CommandSource.Type.CONSOLE, null, (Server) cause.root());
+      return new CommandSource(CommandSource.Type.CONSOLE,
+          null,
+          (Server) cause.root());
     } else if (cause.root() instanceof ServerPlayer) {
-      return new CommandSource(CommandSource.Type.PLAYER, ((ServerPlayer) cause.root()).uniqueId(), (ServerPlayer) cause.root());
+      return new CommandSource(CommandSource.Type.PLAYER,
+          ((ServerPlayer) cause.root()).uniqueId(),
+          (ServerPlayer) cause.root());
     }
     return CommandSource.unknown();
   }

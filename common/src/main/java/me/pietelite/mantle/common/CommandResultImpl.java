@@ -1,9 +1,9 @@
 package me.pietelite.mantle.common;
 
 import java.util.Optional;
-import java.util.function.Supplier;
 import net.kyori.adventure.text.Component;
 
+@SuppressWarnings("checkstyle:MissingJavadocType")
 public class CommandResultImpl implements CommandResult {
 
   private final Type type;
@@ -24,11 +24,4 @@ public class CommandResultImpl implements CommandResult {
     return Optional.ofNullable(message);
   }
 
-  @Override
-  public CommandResult computeIfEmpty(Supplier<CommandResult> supplier) {
-    if (type == Type.EMPTY) {
-      return supplier.get();
-    }
-    return this;
-  }
 }

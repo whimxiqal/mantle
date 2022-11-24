@@ -24,6 +24,9 @@
 
 package me.pietelite.mantle.common;
 
+/**
+ * A logger with which to send important data to console.
+ */
 public interface Logger {
 
   default void error(String message) {

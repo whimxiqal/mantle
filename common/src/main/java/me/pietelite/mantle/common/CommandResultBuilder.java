@@ -2,6 +2,9 @@ package me.pietelite.mantle.common;
 
 import net.kyori.adventure.text.Component;
 
+/**
+ * A generic builder for a {@link CommandResult}.
+ */
 public class CommandResultBuilder {
 
   private CommandResult.Type type;

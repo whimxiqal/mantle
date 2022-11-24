@@ -26,8 +26,16 @@ package me.pietelite.mantle.common;
 
 import me.pietelite.mantle.common.connector.CommandConnector;
 
+/**
+ * A registrar with which to register new commands.
+ */
 public interface CommandRegistrar {
 
+  /**
+   * Register a command.
+   *
+   * @param connector the command
+   */
   void register(CommandConnector connector);
 
 }

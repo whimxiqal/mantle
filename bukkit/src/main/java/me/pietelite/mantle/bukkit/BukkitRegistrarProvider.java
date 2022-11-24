@@ -28,8 +28,20 @@ import me.pietelite.mantle.common.CommandRegistrar;
 import me.pietelite.mantle.common.Mantle;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class BukkitRegistrarProvider {
+/**
+ * A static provider for a {@link CommandRegistrar} for Bukkit.
+ */
+public final class BukkitRegistrarProvider {
 
+  private BukkitRegistrarProvider() {
+  }
+
+  /**
+   * Get a {@link CommandRegistrar} for Bukkit plugins.
+   *
+   * @param plugin the plugin
+   * @return a registrar with which to register commands
+   */
   public static CommandRegistrar get(JavaPlugin plugin) {
     BukkitProxy proxy = new BukkitProxy();
     proxy.initialize(plugin);

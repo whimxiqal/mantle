@@ -30,9 +30,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import me.pietelite.mantle.common.Builder;
 import me.pietelite.mantle.common.CommandSource;
 
-public class CompletionInfoBuilder {
+/**
+ * A builder for {@link CompletionInfo}.
+ */
+public class CompletionInfoBuilder implements Builder<CompletionInfo> {
 
   private final Map<Integer, Map<Integer, Map<Integer, String>>> completionTable = new HashMap<>();
   private final Map<String, Function<CommandSource, Collection<String>>> parameterToCompletions = new HashMap<>();
@@ -42,23 +46,64 @@ public class CompletionInfoBuilder {
     return new CompletionInfoImpl(completionTable, parameterToCompletions, ignoredCompletionTokens);
   }
 
-  public CompletionInfoBuilder registerCompletion(int callerRule, int completableRule, int completableIndex, String parameter) {
+  /**
+   * Register a completion.
+   * The caller rule is the rule containing the completable rule.
+   * The completable rule is the rule that is being completed with this information.
+   * Since the caller rule may have multiple instances of the completable rule, the completable index]
+   * denotes the index at which this completion should take effect.
+   *
+   * @param callerRule       the caller rule
+   * @param completableRule  the completable rule
+   * @param completableIndex the index of the correct instance of the completable rule
+   * @param parameter        the name of the parameter to use
+   * @return builder, for chaining
+   * @see #addParameter(String, Collection)
+   * @see #addParameter(String, Function)
+   * @see CompletionInfo#completionsFor(CommandSource, int, int, int)
+   */
+  public CompletionInfoBuilder registerCompletion(int callerRule,
+                                                  int completableRule,
+                                                  int completableIndex,
+                                                  String parameter) {
     completionTable.computeIfAbsent(completableRule, k -> new HashMap<>())
         .computeIfAbsent(callerRule, k -> new HashMap<>())
         .put(completableIndex, parameter);
     return this;
   }
 
+  /**
+   * Add a parameter.
+   *
+   * @param parameterName the parameter name
+   * @param completions   the completions allowed for this parameter
+   * @return the builder, for chaining
+   */
   public CompletionInfoBuilder addParameter(String parameterName, Collection<String> completions) {
     parameterToCompletions.put(parameterName, (src) -> completions);
     return this;
   }
 
-  public CompletionInfoBuilder addParameter(String parameterName, Function<CommandSource, Collection<String>> completions) {
+  /**
+   * Add a parameter.
+   *
+   * @param parameterName the parameter name
+   * @param completions   the completions allowed for this parameter, to be evaluated at completion runtime
+   * @return the builder, for chaining
+   */
+  public CompletionInfoBuilder addParameter(String parameterName,
+                                            Function<CommandSource, Collection<String>> completions) {
     parameterToCompletions.put(parameterName, completions);
     return this;
   }
 
+  /**
+   * Add a token that should be ignored by the completion engine.
+   * A good example and a recommended one to add here is the quotation mark.
+   *
+   * @param token the integer of the token
+   * @return the builder, for chaining
+   */
   public CompletionInfoBuilder addIgnoredCompletionToken(int token) {
     if (ignoredCompletionTokens.contains(token)) {
       throw new IllegalArgumentException("Token " + token + " is already ignored.");
