@@ -22,23 +22,34 @@
  * SOFTWARE.
  */
 
-package net.whimxiqal.mantle.common;
+package net.whimxiqal.mantle.common.parameter;
 
-import org.antlr.v4.runtime.tree.ParseTreeVisitor;
+import java.util.function.Predicate;
 
-/**
- * An executor that runs some arbitrary code whenever a {@link CommandSource} sends a valid command.
- */
-@FunctionalInterface
-public interface CommandExecutor {
+class ParameterImpl implements Parameter {
 
-  /**
-   * Provide a suitable parse tree visitor, like one implementing an abstract class
-   * given by ANTLR, given a {@link CommandContext} that is executing the command.
-   *
-   * @param context the context of the command
-   * @return the visitor
-   */
-  ParseTreeVisitor<CommandResult> provide(CommandContext context);
+  private final String name;
+  private final ParameterOptions options;
+  private final Predicate<String> validator;
 
+  ParameterImpl(String name, ParameterOptions options, Predicate<String> validator) {
+    this.name = name;
+    this.options = options;
+    this.validator = validator;
+  }
+
+  @Override
+  public String name() {
+    return name;
+  }
+
+  @Override
+  public ParameterOptions options() {
+    return options;
+  }
+
+  @Override
+  public boolean isValid(String candidate) {
+    return validator.test(candidate);
+  }
 }

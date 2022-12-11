@@ -24,21 +24,24 @@
 
 package net.whimxiqal.mantle.common;
 
-import org.antlr.v4.runtime.tree.ParseTreeVisitor;
-
 /**
- * An executor that runs some arbitrary code whenever a {@link CommandSource} sends a valid command.
+ * The context throughout a command.
  */
-@FunctionalInterface
-public interface CommandExecutor {
+public interface CommandContext {
 
   /**
-   * Provide a suitable parse tree visitor, like one implementing an abstract class
-   * given by ANTLR, given a {@link CommandContext} that is executing the command.
+   * The source ("cause") of a command.
    *
-   * @param context the context of the command
-   * @return the visitor
+   * @return the source
    */
-  ParseTreeVisitor<CommandResult> provide(CommandContext context);
+  CommandSource source();
+
+  /**
+   * A container of all identifiers in this command.
+   * These are calculated before the executor runs.
+   *
+   * @return the container of identifiers
+   */
+  IdentifierTracker identifiers();
 
 }

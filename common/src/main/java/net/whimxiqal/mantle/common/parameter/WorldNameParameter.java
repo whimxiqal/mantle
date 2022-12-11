@@ -22,23 +22,26 @@
  * SOFTWARE.
  */
 
-package net.whimxiqal.mantle.common;
+package net.whimxiqal.mantle.common.parameter;
 
-import org.antlr.v4.runtime.tree.ParseTreeVisitor;
+import net.whimxiqal.mantle.common.Mantle;
 
 /**
- * An executor that runs some arbitrary code whenever a {@link CommandSource} sends a valid command.
+ * A parameter for world names.
  */
-@FunctionalInterface
-public interface CommandExecutor {
+public class WorldNameParameter implements Parameter {
+  @Override
+  public String name() {
+    return Parameters.WORLD;
+  }
 
-  /**
-   * Provide a suitable parse tree visitor, like one implementing an abstract class
-   * given by ANTLR, given a {@link CommandContext} that is executing the command.
-   *
-   * @param context the context of the command
-   * @return the visitor
-   */
-  ParseTreeVisitor<CommandResult> provide(CommandContext context);
+  @Override
+  public ParameterOptions options() {
+    return (ctx) -> Mantle.getProxy().worldNames();
+  }
 
+  @Override
+  public boolean isValid(String candidate) {
+    return Mantle.getProxy().isWorldName(candidate);
+  }
 }

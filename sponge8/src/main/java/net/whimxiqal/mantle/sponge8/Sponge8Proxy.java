@@ -87,10 +87,23 @@ class Sponge8Proxy implements Proxy {
   }
 
   @Override
+  public boolean isOnlinePlayer(String candidate) {
+    return Sponge.server().player(candidate).map(ServerPlayer::isOnline).orElse(false);
+  }
+
+  @Override
   public List<String> worldNames() {
     return Sponge.server().worldManager().worlds()
         .stream()
         .map(world -> world.key().value())
         .collect(Collectors.toList());
+  }
+
+  @Override
+  public boolean isWorldName(String candidate) {
+    return Sponge.server().worldManager().worlds()
+        .stream()
+        .map(world -> world.key().value())
+        .anyMatch(name -> name.equalsIgnoreCase(candidate));
   }
 }

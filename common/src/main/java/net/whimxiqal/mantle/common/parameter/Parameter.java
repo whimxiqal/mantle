@@ -46,76 +46,25 @@
  * SOFTWARE.
  */
 
-package net.whimxiqal.mantle.bukkit;
+package net.whimxiqal.mantle.common.parameter;
 
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
-import net.whimxiqal.mantle.common.Logger;
-import net.whimxiqal.mantle.common.Proxy;
-import org.bukkit.Bukkit;
-import org.bukkit.World;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
+import java.util.Collection;
+import net.whimxiqal.mantle.common.CommandSource;
+import net.whimxiqal.mantle.common.IdentifierTracker;
 
-class BukkitProxy implements Proxy {
+/**
+ * A command parameter.
+ */
+public interface Parameter {
 
-  private final Logger logger = new BukkitLogger();
-  private BukkitAudiences adventure;
-
-  @Override
-  public Logger logger() {
-    return logger;
+  static ParameterBuilder builder(String name) {
+    return new ParameterBuilder(name);
   }
 
-  @Override
-  public boolean hasPermission(UUID playerUuid, String permission) throws NoSuchElementException {
-    Player player = Bukkit.getPlayer(playerUuid);
-    if (player == null) {
-      throw new NoSuchElementException("No player found with uuid " + playerUuid.toString());
-    }
-    return player.hasPermission(permission);
-  }
+  String name();
 
-  @Override
-  public List<String> onlinePlayerNames() {
-    return Bukkit.getServer().getOnlinePlayers()
-        .stream()
-        .map(HumanEntity::getName)
-        .collect(Collectors.toList());
-  }
+  ParameterOptions options();
 
-  @Override
-  public boolean isOnlinePlayer(String candidate) {
-    return Bukkit.getServer().getOnlinePlayers()
-        .stream()
-        .anyMatch(player -> player.getName().equalsIgnoreCase(candidate));
-  }
-
-  @Override
-  public List<String> worldNames() {
-    return Bukkit.getServer().getWorlds()
-        .stream()
-        .map(World::getName)
-        .collect(Collectors.toList());
-  }
-
-  @Override
-  public boolean isWorldName(String candidate) {
-    return Bukkit.getServer().getWorlds()
-        .stream()
-        .anyMatch(world -> world.getName().equalsIgnoreCase(candidate));
-  }
-
-  public void initialize(JavaPlugin plugin) {
-    this.adventure = BukkitAudiences.create(plugin);
-  }
-
-  public BukkitAudiences adventure() {
-    return adventure;
-  }
+  boolean isValid(String candidate);
 
 }

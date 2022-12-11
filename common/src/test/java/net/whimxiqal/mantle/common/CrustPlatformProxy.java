@@ -80,7 +80,17 @@ public class CrustPlatformProxy implements Proxy {
   }
 
   @Override
+  public boolean isOnlinePlayer(String candidate) {
+    return PLAYERS.contains(candidate);
+  }
+
+  @Override
   public List<String> worldNames() {
     return Collections.emptyList();
+  }
+
+  @Override
+  public boolean isWorldName(String candidate) {
+    return false;
   }
 }

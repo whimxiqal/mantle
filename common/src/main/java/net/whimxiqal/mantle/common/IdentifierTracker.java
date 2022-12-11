@@ -24,21 +24,19 @@
 
 package net.whimxiqal.mantle.common;
 
-import org.antlr.v4.runtime.tree.ParseTreeVisitor;
+import java.util.List;
 
 /**
- * An executor that runs some arbitrary code whenever a {@link CommandSource} sends a valid command.
+ * A container to provide identifiers during command execution.
  */
-@FunctionalInterface
-public interface CommandExecutor {
+public interface IdentifierTracker {
 
-  /**
-   * Provide a suitable parse tree visitor, like one implementing an abstract class
-   * given by ANTLR, given a {@link CommandContext} that is executing the command.
-   *
-   * @param context the context of the command
-   * @return the visitor
-   */
-  ParseTreeVisitor<CommandResult> provide(CommandContext context);
+  List<String> getAll();
+
+  List<String> getAll(String parameter);
+
+  String get(int index) throws IndexOutOfBoundsException;
+
+  String get(String parameter, int index) throws IndexOutOfBoundsException;
 
 }

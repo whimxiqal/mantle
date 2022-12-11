@@ -22,23 +22,29 @@
  * SOFTWARE.
  */
 
-package net.whimxiqal.mantle.common;
-
-import org.antlr.v4.runtime.tree.ParseTreeVisitor;
+package net.whimxiqal.mantle.common.parameter;
 
 /**
- * An executor that runs some arbitrary code whenever a {@link CommandSource} sends a valid command.
+ * A command parameter for integers.
  */
-@FunctionalInterface
-public interface CommandExecutor {
+public class IntegerParameter implements Parameter {
+  @Override
+  public String name() {
+    return Parameters.INTEGER;
+  }
 
-  /**
-   * Provide a suitable parse tree visitor, like one implementing an abstract class
-   * given by ANTLR, given a {@link CommandContext} that is executing the command.
-   *
-   * @param context the context of the command
-   * @return the visitor
-   */
-  ParseTreeVisitor<CommandResult> provide(CommandContext context);
+  @Override
+  public ParameterOptions options() {
+    return ParameterOptions.empty();
+  }
 
+  @Override
+  public boolean isValid(String candidate) {
+    try {
+      Integer.parseInt(candidate);
+      return true;
+    } catch (NumberFormatException e) {
+      return false;
+    }
+  }
 }

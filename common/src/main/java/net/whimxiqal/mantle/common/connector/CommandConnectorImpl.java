@@ -72,7 +72,7 @@ class CommandConnectorImpl implements CommandConnector {
   private final CommandExecutor executor;
   private final HelpCommandInfo helpCommandInfo;
   private final Map<Integer, String> rulePermissions;
-  private final CompletionInfo completionInfo;
+  private final IdentifierInfo<?> identifierInfo;
   private final Set<Integer> playerOnlyCommands;
   private final boolean useDefaultParseError;
 
@@ -82,7 +82,7 @@ class CommandConnectorImpl implements CommandConnector {
                        CommandExecutor executor,
                        HelpCommandInfo helpCommandInfo,
                        Map<Integer, String> rulePermissions,
-                       CompletionInfo completionInfo,
+                       IdentifierInfo<?> identifierInfo,
                        Set<Integer> playerOnlyCommands,
                        boolean useDefaultParseError) {
     this.roots = Collections.unmodifiableCollection(roots);
@@ -91,7 +91,7 @@ class CommandConnectorImpl implements CommandConnector {
     this.executor = executor;
     this.helpCommandInfo = helpCommandInfo;
     this.rulePermissions = rulePermissions;
-    this.completionInfo = completionInfo;
+    this.identifierInfo = identifierInfo;
     this.playerOnlyCommands = Collections.unmodifiableSet(playerOnlyCommands);
     this.useDefaultParseError = useDefaultParseError;
   }
@@ -209,8 +209,8 @@ class CommandConnectorImpl implements CommandConnector {
   }
 
   @Override
-  public CompletionInfo completionInfo() {
-    return completionInfo;
+  public IdentifierInfo<?> identifierInfo() {
+    return identifierInfo;
   }
 
   @Override

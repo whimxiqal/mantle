@@ -52,21 +52,28 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import net.whimxiqal.mantle.common.CrustBaseVisitor;
-import net.whimxiqal.mantle.common.CrustLexer;
-import net.whimxiqal.mantle.common.CrustParser;
-import net.whimxiqal.mantle.common.connector.CommandConnector;
-import net.whimxiqal.mantle.common.connector.CommandRoot;
-import net.whimxiqal.mantle.common.connector.CompletionInfo;
-import net.whimxiqal.mantle.common.connector.HelpCommandInfo;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
+import net.whimxiqal.mantle.common.connector.CommandConnector;
+import net.whimxiqal.mantle.common.connector.CommandRoot;
+import net.whimxiqal.mantle.common.connector.HelpCommandInfo;
+import net.whimxiqal.mantle.common.connector.IdentifierInfo;
+import net.whimxiqal.mantle.common.parameter.Parameter;
+import net.whimxiqal.mantle.common.parameter.Parameters;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static net.whimxiqal.mantle.common.CrustParser.*;
+import static net.whimxiqal.mantle.common.CrustParser.IdentifierContext;
+import static net.whimxiqal.mantle.common.CrustParser.RULE_core;
+import static net.whimxiqal.mantle.common.CrustParser.RULE_crust;
+import static net.whimxiqal.mantle.common.CrustParser.RULE_identifier;
+import static net.whimxiqal.mantle.common.CrustParser.RULE_player;
+import static net.whimxiqal.mantle.common.CrustParser.RULE_playerEdit;
+import static net.whimxiqal.mantle.common.CrustParser.RULE_playerEditNickname;
+import static net.whimxiqal.mantle.common.CrustParser.RULE_playerInfo;
+import static net.whimxiqal.mantle.common.CrustParser.RULE_register;
+import static net.whimxiqal.mantle.common.CrustParser.RULE_unregister;
 
 public class MantleTest {
 
@@ -87,28 +94,28 @@ public class MantleTest {
         .addRoot(CommandRoot.builder("core").build())
         .lexer(CrustLexer.class)
         .parser(CrustParser.class)
-        .executor(source -> new CrustBaseVisitor<CommandResult>() {
+        .executor(context -> new CrustBaseVisitor<CommandResult>() {
           @Override
           public CommandResult visitRegister(CrustParser.RegisterContext ctx) {
-            String playerName = ctx.user.getText();
+            String playerName = context.identifiers().get(0);
             boolean added = CrustPlugin.instance.players.add(playerName);
             if (added) {
-              source.audience().sendMessage(Component.text("The player was added"));
+              context.source().audience().sendMessage(Component.text("The player was added"));
               return CommandResult.success();
             } else {
-              source.audience().sendMessage(Component.text("A player already exists with that name"));
+              context.source().audience().sendMessage(Component.text("A player already exists with that name"));
               return CommandResult.failure();
             }
           }
 
           @Override
           public CommandResult visitUnregister(CrustParser.UnregisterContext ctx) {
-            boolean removed = CrustPlugin.instance.players.remove(ctx.identifier().getText());
+            boolean removed = CrustPlugin.instance.players.remove(context.identifiers().get(Parameters.PLAYER, 0));
             if (removed) {
-              source.audience().sendMessage(Component.text("The player was removed"));
+              context.source().audience().sendMessage(Component.text("The player was removed"));
               return CommandResult.success();
             } else {
-              source.audience().sendMessage(Component.text("The player could not be removed"));
+              context.source().audience().sendMessage(Component.text("The player could not be removed"));
               return CommandResult.failure();
             }
           }
@@ -133,12 +140,15 @@ public class MantleTest {
         .addPermission(RULE_unregister, "crust.unregister")
         .addPermission(RULE_player, "crust.player")
         .addPermission(RULE_playerEdit, "crust.player.edit")
-        .completionInfo(CompletionInfo.builder()
-            .addParameter("color", COLORS)
-            .registerCompletion(RULE_player, RULE_identifier, 0, "player")
-            .registerCompletion(RULE_register, RULE_identifier, 0, "player")
-            .registerCompletion(RULE_register, RULE_identifier, 1, "color")
-            .registerCompletion(RULE_core, RULE_identifier, 0, "color")
+        .identifierInfo(IdentifierInfo.builder(RULE_identifier, IdentifierContext.class)
+            .addParameter(Parameter.builder("color")
+                .options(ctx -> COLORS)
+                .build())
+            .standardExtractor(IdentifierContext::ident)
+            .registerCompletion(RULE_player, 0, Parameters.PLAYER)
+            .registerCompletion(RULE_register, 1, "color")
+            .registerCompletion(RULE_unregister, 0, Parameters.PLAYER)
+            .registerCompletion(RULE_core, 0, "color")
             .addIgnoredCompletionToken(CrustLexer.SINGLE_QUOTE)
             .addIgnoredCompletionToken(CrustLexer.DOUBLE_QUOTE)
             .build())
