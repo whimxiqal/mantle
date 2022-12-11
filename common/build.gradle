@@ -45,8 +45,8 @@ if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePass
         publications {
             shadow(MavenPublication) { publication ->
                 {
-                    groupId = 'net.whimxiqal'
-                    artifactId = 'mantle-common'
+                    groupId = 'net.whimxiqal.mantle'
+                    artifactId = 'common'
                     project.shadow.component(publication)
                     version = project.ext.fullVersion
                     versionMapping {

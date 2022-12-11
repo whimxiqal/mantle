@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.whimxiqal.mantle.common.CommandSource;
 import net.whimxiqal.mantle.common.MantleCommand;
 import net.whimxiqal.mantle.common.connector.CommandConnector;
@@ -72,7 +73,7 @@ final class Sponge8MantleCommand extends MantleCommand implements Command.Raw {
 
   @Override
   public CommandResult process(CommandCause cause, ArgumentReader.Mutable arguments) {
-    return CommandResult.success();
+    return convertResult(super.process(convertCause(cause), arguments.remaining()));
   }
 
   @Override
@@ -113,5 +114,16 @@ final class Sponge8MantleCommand extends MantleCommand implements Command.Raw {
           (ServerPlayer) cause.root());
     }
     return CommandSource.unknown();
+  }
+
+  private CommandResult convertResult(net.whimxiqal.mantle.common.CommandResult result) {
+    switch (result.type()) {
+      case SUCCESS:
+        return CommandResult.success();
+      case FAILURE:
+      default:
+        return CommandResult.error(result.message().orElse(Component.text("An error occurred")
+            .color(NamedTextColor.DARK_RED)));
+    }
   }
 }

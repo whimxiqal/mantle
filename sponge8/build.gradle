@@ -26,8 +26,8 @@ if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePass
         }
         publications {
             mavenJava(MavenPublication) {
-                groupId = 'net.whimxiqal'
-                artifactId = 'mantle-sponge8'
+                groupId = 'net.whimxiqal.mantle'
+                artifactId = 'sponge8'
                 version = project.ext.fullVersion
                 from components.java
                 versionMapping {
