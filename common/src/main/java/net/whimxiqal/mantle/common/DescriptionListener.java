@@ -50,8 +50,8 @@ package net.whimxiqal.mantle.common;
 
 import java.util.Optional;
 import java.util.Stack;
-import net.whimxiqal.mantle.common.connector.HelpCommandInfo;
 import net.kyori.adventure.text.Component;
+import net.whimxiqal.mantle.common.connector.HelpCommandInfo;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeListener;

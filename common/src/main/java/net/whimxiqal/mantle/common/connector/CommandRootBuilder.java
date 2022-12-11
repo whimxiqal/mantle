@@ -26,8 +26,8 @@ package net.whimxiqal.mantle.common.connector;
 
 import java.util.LinkedList;
 import java.util.List;
-import net.whimxiqal.mantle.common.Builder;
 import net.kyori.adventure.text.Component;
+import net.whimxiqal.mantle.common.Builder;
 
 /**
  * A builder for a {@link CommandRoot}.

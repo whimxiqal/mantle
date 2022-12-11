@@ -52,8 +52,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import net.whimxiqal.mantle.common.Builder;
 import net.kyori.adventure.text.Component;
+import net.whimxiqal.mantle.common.Builder;
 
 /**
  * A builder for a {@link HelpCommandInfo}.

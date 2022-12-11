@@ -57,11 +57,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.whimxiqal.mantle.common.connector.CommandConnector;
 import net.whimxiqal.mantle.common.connector.CommandRoot;
 import net.whimxiqal.mantle.common.connector.HelpCommandInfo;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -81,13 +81,14 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 public class MantleCommand {
 
   private static final List<String> HELP_COMMAND_ARGS = new LinkedList<>();
-  private final CommandConnector connector;
-  private final CommandRoot root;
 
   static {
     HELP_COMMAND_ARGS.add("?");
     HELP_COMMAND_ARGS.add("help");
   }
+
+  private final CommandConnector connector;
+  private final CommandRoot root;
 
   public MantleCommand(CommandConnector connector, CommandRoot commandRoot) {
     this.connector = connector;

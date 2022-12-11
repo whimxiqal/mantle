@@ -49,9 +49,6 @@
 package net.whimxiqal.mantle.sponge8;
 
 import net.whimxiqal.mantle.common.Logger;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import org.spongepowered.api.Sponge;
 
 class Sponge8Logger implements Logger {
 
