@@ -62,6 +62,8 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.whimxiqal.mantle.common.connector.CommandConnector;
 import net.whimxiqal.mantle.common.connector.CommandRoot;
 import net.whimxiqal.mantle.common.connector.HelpCommandInfo;
+import net.whimxiqal.mantle.common.phase.IdentifierListener;
+import net.whimxiqal.mantle.common.phase.IdentifierParsePhase;
 import net.whimxiqal.mantle.common.phase.ParsePhase;
 import net.whimxiqal.mantle.common.phase.PermissionParsePhase;
 import net.whimxiqal.mantle.common.phase.PlayerOnlyParsePhase;
@@ -123,12 +125,15 @@ public class MantleCommand {
       return CommandResult.failure();
     }
 
-    Optional<CommandResult> phaseResult = runPhases(source, parseTree);
+    IdentifierTrackerImpl tracker = new IdentifierTrackerImpl();
+    CommandContext context = new CommandContextImpl(source, tracker);
+
+    Optional<CommandResult> phaseResult = runPhases(source, parseTree, tracker, true);
     if (phaseResult.isPresent()) {
       return phaseResult.get();
     }
 
-    ParseTreeVisitor<CommandResult> executor = connector.executor().provide(source);
+    ParseTreeVisitor<CommandResult> executor = connector.executor().provide(context);
     CommandResult result = executor.visit(parseTree);
     if (result == null) {
       return CommandResult.failure();
@@ -152,19 +157,22 @@ public class MantleCommand {
     parser.addErrorListener(errorListener);
     ParserRuleContext parseTree = connector.baseContext(parser, root);
 
-    Optional<CommandResult> result = runPhases(source, parseTree);
+    IdentifierTrackerImpl tracker = new IdentifierTrackerImpl();
+    CommandContext context = new CommandContextImpl(source, tracker);
+
+    Optional<CommandResult> result = runPhases(source, parseTree, tracker, false);
     if (result.isPresent()) {
       return Collections.emptyList();
     }
 
-    return completionsFor(source, parser, parseTree, trimmedArgs, argumentsEndInWhitespace);
+    return completionsFor(context, parser, parseTree, trimmedArgs, argumentsEndInWhitespace);
   }
 
-  private List<String> completionsFor(CommandSource source, Parser parser, ParserRuleContext parseTree,
+  private List<String> completionsFor(CommandContext context, Parser parser, ParserRuleContext parseTree,
                                       String arguments, boolean argumentsEndInWhitespace) {
     CodeCompletionCore core = new CodeCompletionCore(parser,
-        connector.completionInfo().completableRules(),
-        connector.completionInfo().ignoredCompletionTokens());
+        Collections.singleton(connector.identifierInfo().identifierRule()),
+        connector.identifierInfo().ignoredCompletionTokens());
 
     CaretTokenIndexResult caretTokenIndexResult;
     if (arguments.isEmpty()) {
@@ -189,7 +197,7 @@ public class MantleCommand {
         .filter(t -> {
           // This token is not allowed by this person
           String permission = connector.rulePermissions().get(t);
-          return permission == null || source.hasPermission(permission);
+          return permission == null || context.source().hasPermission(permission);
         })
         .map(t -> parser.getVocabulary().getLiteralName(t))
         .filter(s -> Objects.nonNull(s) && s.length() > 2)
@@ -204,9 +212,8 @@ public class MantleCommand {
         continue;
       }
       int caller = rule.getValue().get(rule.getValue().size() - 1);  // caller is the last one in the stack
-      possibleCompletions.addAll(connector.completionInfo().completionsFor(source,
+      possibleCompletions.addAll(connector.identifierInfo().completeIdentifier(context,
           caller,
-          rule.getKey(),
           completableIndex));
     }
     return possibleCompletions.stream()
@@ -214,10 +221,12 @@ public class MantleCommand {
         .collect(Collectors.toList());
   }
 
-  private Optional<CommandResult> runPhases(CommandSource source, ParseTree tree) {
+  private Optional<CommandResult> runPhases(CommandSource source, ParseTree tree,
+                                            IdentifierTrackerImpl tracker, boolean validate) {
     ParsePhase[] phases = {
         new PermissionParsePhase(connector),
         new PlayerOnlyParsePhase(connector),
+        new IdentifierParsePhase(connector, tracker, validate),
     };
     for (ParsePhase phase : phases) {
       Optional<CommandResult> result = phase.walk(source, tree);
@@ -286,17 +295,25 @@ public class MantleCommand {
     parser.removeErrorListeners();
     MantleErrorListener errorListener = new MantleErrorListener();
     parser.addErrorListener(errorListener);
+    ParserRuleContext parseTree = connector.baseContext(parser, root);
 
-    ParserRuleContext ruleContext = connector.baseContext(parser, root);
+    IdentifierTrackerImpl tracker = new IdentifierTrackerImpl();
+    CommandContext context = new CommandContextImpl(source, tracker);
+
+    Optional<CommandResult> phaseResult = runPhases(source, parseTree, tracker, false);
+    if (phaseResult.isPresent()) {
+      return phaseResult.get().type() == CommandResult.Type.SUCCESS;
+    }
+
     DescriptionListener descriptionListener = new DescriptionListener(helpCommandInfo);
     ParseTreeWalker walker = new ParseTreeWalker();
-    walker.walk(descriptionListener, ruleContext);
+    walker.walk(descriptionListener, parseTree);
 
     Optional<Component> description = descriptionListener.description();
     if (description.isPresent()) {
       source.audience().sendMessage(helpCommandInfo.header());
       source.audience().sendMessage(Component.text("Description: ").append(description.get()));
-      List<String> next = completionsFor(source, parser, ruleContext, arguments, true);
+      List<String> next = completionsFor(context, parser, parseTree, arguments, true);
       for (String n : next) {
         source.audience().sendMessage(Component.text("> ").append(Component.text(n)));
       }

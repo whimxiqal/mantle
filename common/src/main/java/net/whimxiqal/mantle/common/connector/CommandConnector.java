@@ -154,18 +154,19 @@ public interface CommandConnector {
   Map<Integer, String> rulePermissions();
 
   /**
-   * Information about how to complete partial commands whilst typing.
-   *
-   * @return completion info
-   */
-  CompletionInfo completionInfo();
-
-  /**
    * A set of all rule ids that represent player-only commands.
    *
    * @return player only commands
    */
   Set<Integer> playerOnlyCommands();
+
+  /**
+   * Information about identifiers, which includes user-defined parameters, command completion
+   * logic, and extraction from the command parse tree.
+   *
+   * @return the identifier info
+   */
+  IdentifierInfo<?> identifierInfo();
 
   /**
    * True if the default parse error should be used when parsing fails.

@@ -89,11 +89,25 @@ class BukkitProxy implements Proxy {
   }
 
   @Override
+  public boolean isOnlinePlayer(String candidate) {
+    return Bukkit.getServer().getOnlinePlayers()
+        .stream()
+        .anyMatch(player -> player.getName().equalsIgnoreCase(candidate));
+  }
+
+  @Override
   public List<String> worldNames() {
     return Bukkit.getServer().getWorlds()
         .stream()
         .map(World::getName)
         .collect(Collectors.toList());
+  }
+
+  @Override
+  public boolean isWorldName(String candidate) {
+    return Bukkit.getServer().getWorlds()
+        .stream()
+        .anyMatch(world -> world.getName().equalsIgnoreCase(candidate));
   }
 
   public void initialize(JavaPlugin plugin) {

@@ -72,7 +72,7 @@ public class CommandConnectorBuilder implements Builder<CommandConnector> {
   private Class<? extends Parser> parserClass;
   private CommandExecutor executor;
   private HelpCommandInfo helpCommandInfo;
-  private CompletionInfo completionInfo;
+  private IdentifierInfo<?> identifierInfo;
   private boolean useDefaultParseError = true;
 
   /**
@@ -94,16 +94,13 @@ public class CommandConnectorBuilder implements Builder<CommandConnector> {
     if (executor == null) {
       throw new InvalidCommandConnector("The executor of a Mantle Command Connector may not be null");
     }
-    if (completionInfo == null) {
-      completionInfo = CompletionInfo.builder().build();
-    }
     return new CommandConnectorImpl(roots,
         lexerClass,
         parserClass,
         executor,
         helpCommandInfo,
         rulePermissions,
-        completionInfo,
+        identifierInfo,
         playerOnlyCommands,
         useDefaultParseError);
   }
@@ -141,8 +138,8 @@ public class CommandConnectorBuilder implements Builder<CommandConnector> {
     return this;
   }
 
-  public CommandConnectorBuilder completionInfo(CompletionInfo completionInfo) {
-    this.completionInfo = completionInfo;
+  public CommandConnectorBuilder identifierInfo(IdentifierInfo<?> identifierInfo) {
+    this.identifierInfo = identifierInfo;
     return this;
   }
 

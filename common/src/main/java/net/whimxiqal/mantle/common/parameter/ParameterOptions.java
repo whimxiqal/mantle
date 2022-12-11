@@ -22,23 +22,22 @@
  * SOFTWARE.
  */
 
-package net.whimxiqal.mantle.common;
+package net.whimxiqal.mantle.common.parameter;
 
-import org.antlr.v4.runtime.tree.ParseTreeVisitor;
+import java.util.Collection;
+import java.util.Collections;
+import net.whimxiqal.mantle.common.CommandContext;
 
 /**
- * An executor that runs some arbitrary code whenever a {@link CommandSource} sends a valid command.
+ * A supplier of options that a command source may have for a command {@link Parameter}.
  */
 @FunctionalInterface
-public interface CommandExecutor {
+public interface ParameterOptions {
 
-  /**
-   * Provide a suitable parse tree visitor, like one implementing an abstract class
-   * given by ANTLR, given a {@link CommandContext} that is executing the command.
-   *
-   * @param context the context of the command
-   * @return the visitor
-   */
-  ParseTreeVisitor<CommandResult> provide(CommandContext context);
+  static ParameterOptions empty() {
+    return ctx -> Collections.emptyList();
+  }
+
+  Collection<String> get(CommandContext ctx);
 
 }

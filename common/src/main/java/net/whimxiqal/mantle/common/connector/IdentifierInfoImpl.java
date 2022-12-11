@@ -50,67 +50,85 @@ package net.whimxiqal.mantle.common.connector;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-import net.whimxiqal.mantle.common.CommandSource;
-import net.whimxiqal.mantle.common.Mantle;
+import net.whimxiqal.mantle.common.CommandContext;
+import net.whimxiqal.mantle.common.parameter.IntegerParameter;
+import net.whimxiqal.mantle.common.parameter.OnlinePlayerParameter;
+import net.whimxiqal.mantle.common.parameter.Parameter;
+import net.whimxiqal.mantle.common.parameter.WorldNameParameter;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.jetbrains.annotations.Nullable;
 
-class CompletionInfoImpl implements CompletionInfo {
+class IdentifierInfoImpl<T extends ParserRuleContext> implements IdentifierInfo<T> {
 
-  public static final Map<String, Function<CommandSource, Collection<String>>> DEFAULT_PARAMETERS = new HashMap<>();
+  public static final Parameter[] DEFAULT_PARAMETERS = {
+      new IntegerParameter(),
+      new OnlinePlayerParameter(),
+      new WorldNameParameter(),
+  };
 
-  static {
-    DEFAULT_PARAMETERS.put("player", (src) -> Mantle.getProxy().onlinePlayerNames());
-    DEFAULT_PARAMETERS.put("world", (src) -> Mantle.getProxy().worldNames());
-  }
-
-
-  private final Map<Integer, Map<Integer, Map<Integer, String>>> completionTable;
-  private final Map<String, Function<CommandSource, Collection<String>>> parameterToCompletions;
+  private final int rule;
+  private final Class<T> clazz;
+  private final Function<T, String> extractor;
+  private final Map<Integer, Map<Integer, String>> parameterNameTable;
+  private final Map<String, Parameter> parameters;
   private final Set<Integer> ignoredCompletionTokens;
 
-  public CompletionInfoImpl(Map<Integer, Map<Integer, Map<Integer, String>>> completionTable,
-                            Map<String, Function<CommandSource, Collection<String>>> parameterToCompletions,
+  public IdentifierInfoImpl(int rule, Class<T> clazz, Function<T, String> extractor,
+                            Map<Integer, Map<Integer, String>> parameterNameTable,
+                            Map<String, Parameter> parameters,
                             Set<Integer> ignoredCompletionTokens) {
-    this.completionTable = completionTable;
-    this.parameterToCompletions = parameterToCompletions;
+    this.rule = rule;
+    this.clazz = clazz;
+    this.extractor = extractor;
+    this.parameterNameTable = parameterNameTable;
+    this.parameters = parameters;
     this.ignoredCompletionTokens = ignoredCompletionTokens;
+
+    for (Parameter defaultParameter : DEFAULT_PARAMETERS) {
+      if (!parameters.containsKey(defaultParameter.name())) {
+        parameters.put(defaultParameter.name(), defaultParameter);
+      }
+    }
   }
 
   @Override
-  public Collection<String> completionsFor(CommandSource source,
-                                           int callerRule,
-                                           int completableRule,
-                                           int completableIndex) {
-    Map<Integer, Map<Integer, String>> completionTable1 = completionTable.get(completableRule);
-    if (completionTable1 == null) {
-      return Collections.emptyList();
-    }
-    Map<Integer, String> completionTable2 = completionTable1.get(callerRule);
-    if (completionTable2 == null) {
-      return Collections.emptyList();
-    }
-    String parameter = completionTable2.get(completableIndex);
+  public int identifierRule() {
+    return rule;
+  }
+
+  @Override
+  public Class<T> contextClass() {
+    return clazz;
+  }
+
+  @Override
+  public String extractIdentifier(T context) {
+    return extractor.apply(context);
+  }
+
+  @Override
+  public Collection<String> completeIdentifier(CommandContext context,
+                                               int callerRule,
+                                               int identifierIndex) {
+    Parameter parameter = parameterAt(callerRule, identifierIndex);
     if (parameter == null) {
       return Collections.emptyList();
     }
-
-    Function<CommandSource, Collection<String>> completions = DEFAULT_PARAMETERS.get(parameter);
-    if (completions == null) {
-      completions = parameterToCompletions.get(parameter);
-      if (completions == null) {
-        return Collections.emptyList();
-      }
-    }
-    return completions.apply(source);
+    return parameter.options().get(context);
   }
 
   @Override
-  public Set<Integer> completableRules() {
-    return completionTable.keySet();
+  @Nullable
+  public Parameter parameterAt(int callerRule, int identifierIndex) {
+    Map<Integer, String> completionTable1 = parameterNameTable.get(identifierIndex);
+    if (completionTable1 == null) {
+      return null;
+    }
+    String parameterName = completionTable1.get(callerRule);
+    return parameters.get(parameterName);
   }
 
   @Override

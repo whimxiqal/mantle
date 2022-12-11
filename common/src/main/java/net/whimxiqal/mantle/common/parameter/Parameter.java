@@ -46,34 +46,27 @@
  * SOFTWARE.
  */
 
-package net.whimxiqal.mantle.common;
+package net.whimxiqal.mantle.common.parameter;
 
-import java.util.Locale;
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.audience.MessageType;
-import net.kyori.adventure.identity.Identity;
+import java.util.Collection;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.ComponentSerializer;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import org.jetbrains.annotations.NotNull;
+import net.whimxiqal.mantle.common.CommandSource;
+import net.whimxiqal.mantle.common.IdentifierTracker;
 
-public class TestAudience implements Audience {
+/**
+ * A command parameter.
+ */
+public interface Parameter {
 
-  boolean sentMessage = false;
-
-  @Override
-  public void sendMessage(final @NotNull Identity source,
-                          final @NotNull Component message,
-                          final @NotNull MessageType type) {
-    sentMessage = true;
-
-    PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
-    String stringMessage = serializer.serialize(message);
-    System.out.println(stringMessage);
+  static ParameterBuilder builder(String name) {
+    return new ParameterBuilder(name);
   }
 
-  public boolean hasSentMessage() {
-    return sentMessage;
-  }
+  String name();
 
+  ParameterOptions options();
+
+  boolean isValid(String candidate);
+
+  Component invalidMessage();
 }

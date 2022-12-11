@@ -24,43 +24,45 @@
 
 package net.whimxiqal.mantle.common.phase;
 
-import java.util.Collections;
-import java.util.Map;
 import java.util.Optional;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.whimxiqal.mantle.common.CommandResult;
 import net.whimxiqal.mantle.common.CommandSource;
+import net.whimxiqal.mantle.common.IdentifierTracker;
+import net.whimxiqal.mantle.common.IdentifierTrackerImpl;
 import net.whimxiqal.mantle.common.connector.CommandConnector;
+import net.whimxiqal.mantle.common.parameter.Parameter;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 /**
- * A {@link ParsePhase} for identifying whether a user has permission to run a command.
+ * A unit of parsing to be done before the main user-defined execution processes.
  */
-public class PermissionParsePhase implements ParsePhase {
-
+public class IdentifierParsePhase implements ParsePhase {
   private final CommandConnector connector;
+  private final IdentifierTrackerImpl tracker;
+  private final boolean validate;
 
-  public PermissionParsePhase(CommandConnector connector) {
+  public IdentifierParsePhase(CommandConnector connector, IdentifierTrackerImpl tracker, boolean validate) {
     this.connector = connector;
+    this.tracker = tracker;
+    this.validate = validate;
   }
 
   @Override
   public Optional<CommandResult> walk(CommandSource source, ParseTree parseTree) {
-    Map<Integer, String> rulePermissions = connector.rulePermissions();
-    if (rulePermissions == null) {
-      rulePermissions = Collections.emptyMap();
-    }
-    PermissionListener permissionListener = new PermissionListener(source, rulePermissions);
     ParseTreeWalker walker = new ParseTreeWalker();
-    walker.walk(permissionListener, parseTree);
-    if (!permissionListener.isAllowed()) {
-      source.audience().sendMessage(Component.text("You do not have permission to do that")
-          .color(NamedTextColor.DARK_RED));
+    if (connector.identifierInfo() == null) {
+      return Optional.empty();
+    }
+    IdentifierListener identifierListener = new IdentifierListener(connector.identifierInfo(), tracker, validate);
+    walker.walk(identifierListener, parseTree);
+    Parameter invalid = identifierListener.getInvalid();
+    if (invalid != null) {
+      source.audience().sendMessage(invalid.invalidMessage());
       return Optional.of(CommandResult.failure());
     }
     return Optional.empty();
   }
-
 }

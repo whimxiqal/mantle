@@ -1,15 +1,17 @@
 grammar Crust;
 
 // crust
-crust: CRUST (register | unregister | player);
-core: CORE color=identifier;  // just tests autocompletion for this specific case
+crust: CRUST (register | unregister | player | age);
+core: CORE identifier;  // just tests autocompletion for this specific case
 
-register: REGISTER user=identifier color=identifier?;
+register: REGISTER identifier identifier?;
 unregister: UNREGISTER identifier;
 player: PLAYER identifier (playerInfo | playerEdit);
 playerInfo: INFO;
 playerEdit: EDIT (playerEditNickname);
 playerEditNickname: NICKNAME identifier;
+
+age: AGE identifier;  // tests integer parameter
 
 // tokens
 CRUST: 'crust';
@@ -20,10 +22,23 @@ PLAYER: 'player';
 INFO: 'info';
 EDIT: 'edit';
 NICKNAME: 'nickname';
+AGE: 'age';
 
 // MANTLE NODES
-identifier: ID | SINGLE_QUOTE ID SINGLE_QUOTE | DOUBLE_QUOTE ID DOUBLE_QUOTE;
-ID: [a-zA-Z0-9\-_]+;
+identifier: ident | (SINGLE_QUOTE ident+ SINGLE_QUOTE) | (DOUBLE_QUOTE ident+ DOUBLE_QUOTE);
+ident: ID
+        | CRUST
+        | CORE
+        | REGISTER
+        | UNREGISTER
+        | PLAYER
+        | INFO
+        | EDIT
+        | NICKNAME
+        | AGE;
+ID: [a-zA-Z0-9\-_&]+;
+ID_SET: ID (COMMA ID)+;
+COMMA: ',';
 SINGLE_QUOTE: '\'';
 DOUBLE_QUOTE: '"';
 WS : [ \t\r\n]+ -> channel(HIDDEN); // skip spaces, tabs, newlines

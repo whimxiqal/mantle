@@ -50,17 +50,26 @@ package net.whimxiqal.mantle.common.connector;
 
 import java.util.Collection;
 import java.util.Set;
-import net.whimxiqal.mantle.common.CommandSource;
+import net.whimxiqal.mantle.common.CommandContext;
+import net.whimxiqal.mantle.common.parameter.Parameter;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * Information about how Mantle should complete partial input for dynamic parameters.
  */
-public interface CompletionInfo {
+public interface IdentifierInfo<T extends ParserRuleContext> {
 
-  static CompletionInfoBuilder builder() {
-    return new CompletionInfoBuilder();
+  static <I extends ParserRuleContext> IdentifierInfoBuilder<I> builder(int identifierRule,
+                                                                        Class<I> identifierRuleContext) {
+    return new IdentifierInfoBuilder<>(identifierRule, identifierRuleContext);
   }
+
+  int identifierRule();
+
+  Class<T> contextClass();
+
+  String extractIdentifier(T context);
 
   /**
    * Get completions for a specific type of rule in a specific context.
@@ -74,15 +83,14 @@ public interface CompletionInfo {
    * get completions for the player identifier with <code>completionsFor(5, 8, 0)</code> and get
    * completions for the color identifier with <code>completionsFor(5, 8, 1)</code>.
    *
-   * @param source           the command source
-   * @param callerRule       the rule which is called during completion
-   * @param completableRule  the rule which is being completed
-   * @param completableIndex the index in the list of completable rules
+   * @param context         the command context
+   * @param callerRule      the rule which is called during completion
+   * @param identifierIndex the index in the list of all identifiers in the caller rule
    * @return possible completions
    */
-  Collection<String> completionsFor(CommandSource source, int callerRule, int completableRule, int completableIndex);
+  Collection<String> completeIdentifier(CommandContext context, int callerRule, int identifierIndex);
 
-  Set<Integer> completableRules();
+  @Nullable Parameter parameterAt(int callerRule, int identifierIndex);
 
   @Nullable Set<Integer> ignoredCompletionTokens();
 

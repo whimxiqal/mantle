@@ -63,6 +63,9 @@ public interface Proxy {
 
   List<String> onlinePlayerNames();
 
+  boolean isOnlinePlayer(String candidate);
+
   List<String> worldNames();
 
+  boolean isWorldName(String candidate);
 }
