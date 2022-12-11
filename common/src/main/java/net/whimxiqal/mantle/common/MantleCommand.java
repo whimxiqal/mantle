@@ -62,6 +62,9 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.whimxiqal.mantle.common.connector.CommandConnector;
 import net.whimxiqal.mantle.common.connector.CommandRoot;
 import net.whimxiqal.mantle.common.connector.HelpCommandInfo;
+import net.whimxiqal.mantle.common.phase.ParsePhase;
+import net.whimxiqal.mantle.common.phase.PermissionParsePhase;
+import net.whimxiqal.mantle.common.phase.PlayerOnlyParsePhase;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -80,12 +83,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
  */
 public class MantleCommand {
 
-  private static final List<String> HELP_COMMAND_ARGS = new LinkedList<>();
-
-  static {
-    HELP_COMMAND_ARGS.add("?");
-    HELP_COMMAND_ARGS.add("help");
-  }
+  private static final String[] HELP_COMMAND_ARGS = {"?", "help"};
 
   private final CommandConnector connector;
   private final CommandRoot root;
@@ -125,9 +123,9 @@ public class MantleCommand {
       return CommandResult.failure();
     }
 
-    if (isRestricted(source, parseTree)) {
-      source.audience().sendMessage(Component.text("You don't have permissions to do that").color(NamedTextColor.RED));
-      return CommandResult.failure();
+    Optional<CommandResult> phaseResult = runPhases(source, parseTree);
+    if (phaseResult.isPresent()) {
+      return phaseResult.get();
     }
 
     ParseTreeVisitor<CommandResult> executor = connector.executor().provide(source);
@@ -154,8 +152,8 @@ public class MantleCommand {
     parser.addErrorListener(errorListener);
     ParserRuleContext parseTree = connector.baseContext(parser, root);
 
-    if (isRestricted(source, parseTree)) {
-      // This command is not even allowed by this person
+    Optional<CommandResult> result = runPhases(source, parseTree);
+    if (result.isPresent()) {
       return Collections.emptyList();
     }
 
@@ -214,6 +212,20 @@ public class MantleCommand {
     return possibleCompletions.stream()
         .filter(s -> s.toLowerCase(Locale.ROOT).startsWith(currentText.toLowerCase(Locale.ENGLISH)))
         .collect(Collectors.toList());
+  }
+
+  private Optional<CommandResult> runPhases(CommandSource source, ParseTree tree) {
+    ParsePhase[] phases = {
+        new PermissionParsePhase(connector),
+        new PlayerOnlyParsePhase(connector),
+    };
+    for (ParsePhase phase : phases) {
+      Optional<CommandResult> result = phase.walk(source, tree);
+      if (result.isPresent()) {
+        return result;
+      }
+    }
+    return Optional.empty();
   }
 
   private CaretTokenIndexResult getCaretTokenIndex(ParseTree parseTree, int column) {
@@ -292,29 +304,6 @@ public class MantleCommand {
       source.audience().sendMessage(Component.text("No help command found"));
     }
     return true;
-  }
-
-  private boolean isRestricted(CommandSource source, ParseTree parseTree) {
-    // Permissions
-    Map<Integer, String> rulePermissions = connector.rulePermissions();
-    if (rulePermissions == null) {
-      rulePermissions = Collections.emptyMap();
-    }
-    PermissionListener permissionListener = new PermissionListener(source, rulePermissions);
-    ParseTreeWalker walker = new ParseTreeWalker();
-    walker.walk(permissionListener, parseTree);
-    if (!permissionListener.isAllowed()) {
-      return true;
-    }
-
-    // Player only
-    if (source.type() != CommandSource.Type.PLAYER) {
-      RuleRejectionsListener rejectionsListener = new RuleRejectionsListener(connector.playerOnlyCommands());
-      walker = new ParseTreeWalker();
-      walker.walk(rejectionsListener, parseTree);
-      return rejectionsListener.rejected();
-    }
-    return false;
   }
 
   private static class CaretTokenIndexResult {
