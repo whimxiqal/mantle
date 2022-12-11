@@ -42,6 +42,7 @@ public class CommandRootBuilder implements Builder<CommandRoot> {
     this.baseCommand = baseCommand;
   }
 
+  @Override
   public CommandRoot build() {
     return new CommandRootImpl(baseCommand, description, aliases);
   }

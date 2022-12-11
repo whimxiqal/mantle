@@ -55,6 +55,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import net.whimxiqal.mantle.common.Builder;
 import net.whimxiqal.mantle.common.CommandExecutor;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
@@ -62,7 +63,7 @@ import org.antlr.v4.runtime.Parser;
 /**
  * Builder for a {@link CommandConnector}.
  */
-public class CommandConnectorBuilder {
+public class CommandConnectorBuilder implements Builder<CommandConnector> {
 
   private final List<CommandRoot> roots = new LinkedList<>();
   private final Map<Integer, String> rulePermissions = new HashMap<>();
@@ -79,6 +80,7 @@ public class CommandConnectorBuilder {
    *
    * @return the connector
    */
+  @Override
   public CommandConnector build() {
     if (roots.isEmpty()) {
       throw new InvalidCommandConnector("There must be at least one command root");
