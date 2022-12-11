@@ -334,7 +334,6 @@ public class MantleTest {
   void badParameterInput() {
     UUID playerUuid = UUID.randomUUID();
     CommandSource source = new CommandSource(CommandSource.Type.PLAYER, playerUuid, new TestAudience());
-    Set<String> hosts = CrustPlugin.instance.players;
 
     // green is a valid color
     assertSuccess(instance().executeCommand(source, "crust register double green"));
