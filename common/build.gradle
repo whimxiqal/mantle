@@ -8,8 +8,8 @@ dependencies {
     antlr 'org.antlr:antlr4:4.9.3'
 
     // https://mvnrepository.com/artifact/net.kyori/adventure-api
-    api 'net.kyori:adventure-api:4.11.0'
-    api 'net.kyori:adventure-text-serializer-plain:4.11.0'
+    implementation 'net.kyori:adventure-api:4.11.0'
+    implementation 'net.kyori:adventure-text-serializer-plain:4.11.0'
 
     // https://mvnrepository.com/artifact/com.vmware.antlr4-c3/antlr4-c3
     // Internally used for command completion
@@ -22,7 +22,7 @@ test {
 }
 
 generateTestGrammarSource {
-    arguments += ["-visitor", "-lib", "src/test/antlr/me/pietelite/mantle/common", "-package", "me.pietelite.mantle.common"]
+    arguments += ["-visitor", "-lib", "src/test/antlr/net/whimxiqal/mantle/common", "-package", "net.whimxiqal.mantle.common"]
 }
 
 if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword') && project.ext.publish) {
@@ -43,45 +43,47 @@ if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePass
             }
         }
         publications {
-            mavenJava(MavenPublication) {
-                groupId = 'me.pietelite.mantle'
-                artifactId = 'common'
-                version = project.ext.fullVersion
-                from components.java
-                versionMapping {
-                    usage('java-api') {
-                        fromResolutionOf('runtimeClasspath')
-                    }
-                    usage('java-runtime') {
-                        fromResolutionResult()
-                    }
-                }
-                pom {
-                    name = 'Mantle Common'
-                    description = 'A Minecraft Command Framwork on top of ANTLR4'
-                    url = 'https://github.com/pietelite/mantle'
-                    licenses {
-                        license {
-                            name = 'MIT'
-                            url = 'https://opensource.org/licenses/MIT'
+            shadow(MavenPublication) { publication ->
+                {
+                    groupId = 'net.whimxiqal'
+                    artifactId = 'mantle-common'
+                    project.shadow.component(publication)
+                    version = project.ext.fullVersion
+                    versionMapping {
+                        usage('java-api') {
+                            fromResolutionOf('runtimeClasspath')
+                        }
+                        usage('java-runtime') {
+                            fromResolutionResult()
                         }
                     }
-                    developers {
-                        developer {
-                            id = 'pietelite'
-                            name = 'PietElite'
-                            url = 'https://pietelite.me'
-                            email = 'pietelite@gmail.com'
+                    pom {
+                        name = 'Mantle Common'
+                        description = 'A Minecraft Command Framwork on top of ANTLR4'
+                        url = 'https://github.com/whimxiqal/mantle'
+                        licenses {
+                            license {
+                                name = 'MIT'
+                                url = 'https://opensource.org/licenses/MIT'
+                            }
                         }
-                    }
-                    scm {
-                        connection = 'scm:git:git://github.com/pietelite/mantle.git'
-                        developerConnection = 'scm:git:ssh://github.com:pietelite/mantle.git'
-                        url = 'https://github.com/pietelite/mantle'
-                    }
-                    issueManagement {
-                        system = 'GitHub'
-                        url = 'https://github.com/pietelite/mantle/issues'
+                        developers {
+                            developer {
+                                id = 'whimxiqal'
+                                name = 'whimxiqal'
+                                url = 'https://whimxiqal.net'
+                                email = 'whimxiqal@gmail.com'
+                            }
+                        }
+                        scm {
+                            connection = 'scm:git:git://github.com/whimxiqal/mantle.git'
+                            developerConnection = 'scm:git:ssh://github.com:whimxiqal/mantle.git'
+                            url = 'https://github.com/whimxiqal/mantle'
+                        }
+                        issueManagement {
+                            system = 'GitHub'
+                            url = 'https://github.com/whimxiqal/mantle/issues'
+                        }
                     }
                 }
             }
@@ -90,7 +92,7 @@ if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePass
         signing {
             useGpgCmd()
             sign configurations.archives
-            sign publishing.publications.mavenJava
+            sign publishing.publications.shadow
             required = true
         }
     }
