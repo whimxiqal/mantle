@@ -55,14 +55,6 @@ import java.util.UUID;
 
 public class CrustPlatformProxy implements Proxy {
 
-  public static final List<String> PLAYERS = new LinkedList<>();
-
-  static {
-    PLAYERS.add("PietElite");
-    PLAYERS.add("belkar1");
-  }
-
-
   @Override
   public Logger logger() {
     return new TestLogger();
@@ -76,12 +68,12 @@ public class CrustPlatformProxy implements Proxy {
 
   @Override
   public List<String> onlinePlayerNames() {
-    return PLAYERS;
+    return new LinkedList<>(CrustPlugin.instance.players);
   }
 
   @Override
   public boolean isOnlinePlayer(String candidate) {
-    return PLAYERS.contains(candidate);
+    return CrustPlugin.instance.players.contains(candidate);
   }
 
   @Override

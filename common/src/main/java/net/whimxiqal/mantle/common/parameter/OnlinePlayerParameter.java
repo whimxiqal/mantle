@@ -24,6 +24,8 @@
 
 package net.whimxiqal.mantle.common.parameter;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.whimxiqal.mantle.common.Mantle;
 
 /**
@@ -43,5 +45,10 @@ public class OnlinePlayerParameter implements Parameter {
   @Override
   public boolean isValid(String candidate) {
     return Mantle.getProxy().isOnlinePlayer(candidate);
+  }
+
+  @Override
+  public Component invalidMessage() {
+    return Component.text("That is not an online player").color(NamedTextColor.DARK_RED);
   }
 }

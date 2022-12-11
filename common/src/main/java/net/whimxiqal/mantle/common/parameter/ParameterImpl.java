@@ -25,17 +25,22 @@
 package net.whimxiqal.mantle.common.parameter;
 
 import java.util.function.Predicate;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 class ParameterImpl implements Parameter {
 
   private final String name;
   private final ParameterOptions options;
   private final Predicate<String> validator;
+  private final Component invalidMessage;
 
-  ParameterImpl(String name, ParameterOptions options, Predicate<String> validator) {
+  ParameterImpl(String name, ParameterOptions options,
+                Predicate<String> validator, Component invalidMessage) {
     this.name = name;
     this.options = options;
     this.validator = validator;
+    this.invalidMessage = invalidMessage;
   }
 
   @Override
@@ -50,6 +55,14 @@ class ParameterImpl implements Parameter {
 
   @Override
   public boolean isValid(String candidate) {
+    if (validator == null) {
+      return true;
+    }
     return validator.test(candidate);
+  }
+
+  @Override
+  public Component invalidMessage() {
+    return invalidMessage;
   }
 }

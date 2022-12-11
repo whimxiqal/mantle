@@ -25,6 +25,8 @@
 package net.whimxiqal.mantle.common.parameter;
 
 import java.util.function.Predicate;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.whimxiqal.mantle.common.Builder;
 
 /**
@@ -35,23 +37,50 @@ public class ParameterBuilder implements Builder<Parameter> {
   private final String name;
   private ParameterOptions options;
   private Predicate<String> validator;
+  private Component invalidMessage;
 
   public ParameterBuilder(String name) {
     this.name = name;
   }
 
+  /**
+   * Set the logic for determining the list of possible options a user has for this parameter.
+   *
+   * @param options the options
+   * @return builder, for chaining
+   */
   public ParameterBuilder options(ParameterOptions options) {
     this.options = options;
     return this;
   }
 
+  /**
+   * A validator for a given input string for this parameter.
+   *
+   * @param validator the validator
+   * @return builder, for chaining
+   */
   public ParameterBuilder validator(Predicate<String> validator) {
     this.validator = validator;
     return this;
   }
 
+  /**
+   * Set the message to send to the user if the validator fails.
+   *
+   * @param component the message
+   * @return builder, for chaining
+   */
+  public ParameterBuilder invalidMessage(Component component) {
+    this.invalidMessage = component;
+    return this;
+  }
+
   @Override
   public Parameter build() {
-    return new ParameterImpl(name, options, validator);
+    if (invalidMessage == null) {
+      invalidMessage = Component.text("That input is invalid").color(NamedTextColor.DARK_RED);
+    }
+    return new ParameterImpl(name, options, validator, invalidMessage);
   }
 }

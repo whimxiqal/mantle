@@ -24,7 +24,6 @@
 
 package net.whimxiqal.mantle.common.phase;
 
-import java.util.Objects;
 import java.util.Stack;
 import net.whimxiqal.mantle.common.IdentifierTrackerImpl;
 import net.whimxiqal.mantle.common.connector.IdentifierInfo;
@@ -42,22 +41,15 @@ public class IdentifierListener implements ParseTreeListener {
   private final IdentifierInfo<?> info;
   private final IdentifierTrackerImpl tracker;
   private final Stack<IdentifierCount> ruleStack = new Stack<>();
+  private final boolean validate;
+  private Parameter invalid;
 
-  private static class IdentifierCount {
-    IdentifierCount(int rule) {
-      this.rule = rule;
-      this.count = 0;
-    }
-
-    int rule;
-    int count;
-  }
-
-  public IdentifierListener(IdentifierInfo<?> info, IdentifierTrackerImpl tracker) {
+  public IdentifierListener(IdentifierInfo<?> info, IdentifierTrackerImpl tracker, boolean validate) {
     this.info = info;
     this.tracker = tracker;
+    this.validate = validate;
+    this.invalid = null;
   }
-
 
   @Override
   public void visitTerminal(TerminalNode node) {
@@ -76,10 +68,22 @@ public class IdentifierListener implements ParseTreeListener {
   }
 
   private <T extends ParserRuleContext> void enter(ParserRuleContext ctx, IdentifierInfo<T> info) {
-    if (info.contextClass().isInstance(ctx)) {
-      Parameter parameter = info.parameterAt(ruleStack.peek().rule, ruleStack.peek().count);
-      tracker.add(parameter == null ? null : parameter.name(),
-          info.extractIdentifier(info.contextClass().cast(ctx)));
+    if (invalid != null) {
+      return;
+    }
+    if (!info.contextClass().isInstance(ctx)) {
+      return;
+    }
+    Parameter parameter = info.parameterAt(ruleStack.peek().rule, ruleStack.peek().count);
+    String identifier = info.extractIdentifier(info.contextClass().cast(ctx));
+    if (parameter == null) {
+      tracker.add(null, identifier);
+    } else {
+      if (!validate || parameter.isValid(identifier)) {
+        tracker.add(parameter.name(), identifier);
+      } else {
+        invalid = parameter;
+      }
     }
   }
 
@@ -90,6 +94,25 @@ public class IdentifierListener implements ParseTreeListener {
     if (isIdentifier) {
       // we just left the identifier, so this rule is now potentially on it's next identifier
       ruleStack.peek().count++;
+    }
+  }
+
+  /**
+   * The parameter that had invalid input.
+   *
+   * @return the parameter
+   */
+  public Parameter getInvalid() {
+    return invalid;
+  }
+
+  private static class IdentifierCount {
+    int rule;
+    int count;
+
+    IdentifierCount(int rule) {
+      this.rule = rule;
+      this.count = 0;
     }
   }
 

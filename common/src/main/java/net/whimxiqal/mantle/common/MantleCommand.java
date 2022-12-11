@@ -128,7 +128,7 @@ public class MantleCommand {
     IdentifierTrackerImpl tracker = new IdentifierTrackerImpl();
     CommandContext context = new CommandContextImpl(source, tracker);
 
-    Optional<CommandResult> phaseResult = runPhases(source, parseTree, tracker);
+    Optional<CommandResult> phaseResult = runPhases(source, parseTree, tracker, true);
     if (phaseResult.isPresent()) {
       return phaseResult.get();
     }
@@ -160,7 +160,7 @@ public class MantleCommand {
     IdentifierTrackerImpl tracker = new IdentifierTrackerImpl();
     CommandContext context = new CommandContextImpl(source, tracker);
 
-    Optional<CommandResult> result = runPhases(source, parseTree, tracker);
+    Optional<CommandResult> result = runPhases(source, parseTree, tracker, false);
     if (result.isPresent()) {
       return Collections.emptyList();
     }
@@ -221,11 +221,12 @@ public class MantleCommand {
         .collect(Collectors.toList());
   }
 
-  private Optional<CommandResult> runPhases(CommandSource source, ParseTree tree, IdentifierTrackerImpl tracker) {
+  private Optional<CommandResult> runPhases(CommandSource source, ParseTree tree,
+                                            IdentifierTrackerImpl tracker, boolean validate) {
     ParsePhase[] phases = {
         new PermissionParsePhase(connector),
         new PlayerOnlyParsePhase(connector),
-        new IdentifierParsePhase(connector, tracker),
+        new IdentifierParsePhase(connector, tracker, validate),
     };
     for (ParsePhase phase : phases) {
       Optional<CommandResult> result = phase.walk(source, tree);
@@ -299,7 +300,7 @@ public class MantleCommand {
     IdentifierTrackerImpl tracker = new IdentifierTrackerImpl();
     CommandContext context = new CommandContextImpl(source, tracker);
 
-    Optional<CommandResult> phaseResult = runPhases(source, parseTree, tracker);
+    Optional<CommandResult> phaseResult = runPhases(source, parseTree, tracker, false);
     if (phaseResult.isPresent()) {
       return phaseResult.get().type() == CommandResult.Type.SUCCESS;
     }

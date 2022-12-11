@@ -24,6 +24,9 @@
 
 package net.whimxiqal.mantle.common.parameter;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+
 /**
  * A command parameter for integers.
  */
@@ -46,5 +49,10 @@ public class IntegerParameter implements Parameter {
     } catch (NumberFormatException e) {
       return false;
     }
+  }
+
+  @Override
+  public Component invalidMessage() {
+    return Component.text("That is not a valid integer").color(NamedTextColor.DARK_RED);
   }
 }

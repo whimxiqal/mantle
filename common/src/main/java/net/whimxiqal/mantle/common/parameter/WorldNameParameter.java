@@ -24,6 +24,8 @@
 
 package net.whimxiqal.mantle.common.parameter;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.whimxiqal.mantle.common.Mantle;
 
 /**
@@ -43,5 +45,10 @@ public class WorldNameParameter implements Parameter {
   @Override
   public boolean isValid(String candidate) {
     return Mantle.getProxy().isWorldName(candidate);
+  }
+
+  @Override
+  public Component invalidMessage() {
+    return Component.text("That is not a valid world").color(NamedTextColor.DARK_RED);
   }
 }

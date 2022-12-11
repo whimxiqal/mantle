@@ -1,7 +1,7 @@
 grammar Crust;
 
 // crust
-crust: CRUST (register | unregister | player);
+crust: CRUST (register | unregister | player | age);
 core: CORE identifier;  // just tests autocompletion for this specific case
 
 register: REGISTER identifier identifier?;
@@ -10,6 +10,8 @@ player: PLAYER identifier (playerInfo | playerEdit);
 playerInfo: INFO;
 playerEdit: EDIT (playerEditNickname);
 playerEditNickname: NICKNAME identifier;
+
+age: AGE identifier;  // tests integer parameter
 
 // tokens
 CRUST: 'crust';
@@ -20,6 +22,7 @@ PLAYER: 'player';
 INFO: 'info';
 EDIT: 'edit';
 NICKNAME: 'nickname';
+AGE: 'age';
 
 // MANTLE NODES
 identifier: ident | (SINGLE_QUOTE ident+ SINGLE_QUOTE) | (DOUBLE_QUOTE ident+ DOUBLE_QUOTE);
@@ -31,8 +34,9 @@ ident: ID
         | PLAYER
         | INFO
         | EDIT
-        | NICKNAME;
-ID: [a-zA-Z0-9\-_]+;
+        | NICKNAME
+        | AGE;
+ID: [a-zA-Z0-9\-_&]+;
 ID_SET: ID (COMMA ID)+;
 COMMA: ',';
 SINGLE_QUOTE: '\'';

@@ -49,6 +49,7 @@
 package net.whimxiqal.mantle.common.parameter;
 
 import java.util.Collection;
+import net.kyori.adventure.text.Component;
 import net.whimxiqal.mantle.common.CommandSource;
 import net.whimxiqal.mantle.common.IdentifierTracker;
 
@@ -67,4 +68,5 @@ public interface Parameter {
 
   boolean isValid(String candidate);
 
+  Component invalidMessage();
 }

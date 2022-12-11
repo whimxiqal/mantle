@@ -32,6 +32,7 @@ import net.whimxiqal.mantle.common.CommandSource;
 import net.whimxiqal.mantle.common.IdentifierTracker;
 import net.whimxiqal.mantle.common.IdentifierTrackerImpl;
 import net.whimxiqal.mantle.common.connector.CommandConnector;
+import net.whimxiqal.mantle.common.parameter.Parameter;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
@@ -41,10 +42,12 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 public class IdentifierParsePhase implements ParsePhase {
   private final CommandConnector connector;
   private final IdentifierTrackerImpl tracker;
+  private final boolean validate;
 
-  public IdentifierParsePhase(CommandConnector connector, IdentifierTrackerImpl tracker) {
+  public IdentifierParsePhase(CommandConnector connector, IdentifierTrackerImpl tracker, boolean validate) {
     this.connector = connector;
     this.tracker = tracker;
+    this.validate = validate;
   }
 
   @Override
@@ -53,8 +56,13 @@ public class IdentifierParsePhase implements ParsePhase {
     if (connector.identifierInfo() == null) {
       return Optional.empty();
     }
-    IdentifierListener rejectionsListener = new IdentifierListener(connector.identifierInfo(), tracker);
-    walker.walk(rejectionsListener, parseTree);
+    IdentifierListener identifierListener = new IdentifierListener(connector.identifierInfo(), tracker, validate);
+    walker.walk(identifierListener, parseTree);
+    Parameter invalid = identifierListener.getInvalid();
+    if (invalid != null) {
+      source.audience().sendMessage(invalid.invalidMessage());
+      return Optional.of(CommandResult.failure());
+    }
     return Optional.empty();
   }
 }

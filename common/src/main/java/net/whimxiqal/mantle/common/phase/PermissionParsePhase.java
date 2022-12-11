@@ -62,4 +62,5 @@ public class PermissionParsePhase implements ParsePhase {
     }
     return Optional.empty();
   }
+
 }

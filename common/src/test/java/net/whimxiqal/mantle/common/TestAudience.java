@@ -69,6 +69,7 @@ public class TestAudience implements Audience {
 
     PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
     String stringMessage = serializer.serialize(message);
+    System.out.println(stringMessage);
   }
 
   public boolean hasSentMessage() {
