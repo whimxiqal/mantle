@@ -161,6 +161,7 @@ public class MantleTest {
             .addIgnoredCompletionToken(CrustLexer.SINGLE_QUOTE)
             .addIgnoredCompletionToken(CrustLexer.DOUBLE_QUOTE)
             .build())
+        .playerOnlyCommands(RULE_age)
         .build());
   }
 
@@ -337,15 +338,20 @@ public class MantleTest {
 
     // green is a valid color
     assertSuccess(instance().executeCommand(source, "crust register double green"));
-
     // purple is not a valid color
     assertFailure(instance().executeCommand(source, "crust register trouble purple"));
-
     // 10 is a valid number
     assertSuccess(instance().executeCommand(source, "crust age 10"));
-
     // 9 and 3/4 is not a valid number (but is a valid train platform!)
     assertFailure(instance().executeCommand(source, "crust age 9&3/4"));
+  }
+
+  @Test
+  void playerOnlyCommands() {
+    CommandSource source = new CommandSource(CommandSource.Type.PLAYER, UUID.randomUUID(), new TestAudience());
+    assertSuccess(instance().executeCommand(source, "crust age 10"));
+    source = new CommandSource(CommandSource.Type.CONSOLE, null, new TestAudience());
+    assertFailure(instance().executeCommand(source, "crust age 10"));
   }
 
 }
