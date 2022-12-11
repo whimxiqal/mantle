@@ -25,14 +25,23 @@
 package net.whimxiqal.mantle.common.phase;
 
 import java.util.Optional;
-import java.util.function.Supplier;
 import net.whimxiqal.mantle.common.CommandResult;
 import net.whimxiqal.mantle.common.CommandSource;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.ParseTreeListener;
 
+/**
+ * A parsing phase for the parse tree to identify problems in the command
+ * before the execution phase.
+ */
 public interface ParsePhase {
 
+  /**
+   * Walk along the command parse tree as the given command source.
+   *
+   * @param source    the source
+   * @param parseTree the command
+   * @return the command result if the walk has determined a finalization state
+   */
   Optional<CommandResult> walk(CommandSource source, ParseTree parseTree);
 
 }

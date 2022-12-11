@@ -33,6 +33,10 @@ import net.whimxiqal.mantle.common.connector.CommandConnector;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+/**
+ * A parse phase to determine whether a user is not allowed to run a command
+ * because they are not an in-game player.
+ */
 public class PlayerOnlyParsePhase implements ParsePhase {
   private final CommandConnector connector;
 
@@ -49,7 +53,8 @@ public class PlayerOnlyParsePhase implements ParsePhase {
     RuleRejectionsListener rejectionsListener = new RuleRejectionsListener(connector.playerOnlyCommands());
     walker.walk(rejectionsListener, parseTree);
     if (rejectionsListener.rejected()) {
-      source.audience().sendMessage(Component.text("Only players may execute that command").color(NamedTextColor.DARK_RED));
+      source.audience().sendMessage(Component.text("Only players may execute that command")
+          .color(NamedTextColor.DARK_RED));
       return Optional.of(CommandResult.failure());
     }
     return Optional.empty();

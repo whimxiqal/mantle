@@ -35,6 +35,9 @@ import net.whimxiqal.mantle.common.connector.CommandConnector;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+/**
+ * A {@link ParsePhase} for identifying whether a user has permission to run a command.
+ */
 public class PermissionParsePhase implements ParsePhase {
 
   private final CommandConnector connector;
@@ -53,7 +56,8 @@ public class PermissionParsePhase implements ParsePhase {
     ParseTreeWalker walker = new ParseTreeWalker();
     walker.walk(permissionListener, parseTree);
     if (!permissionListener.isAllowed()) {
-      source.audience().sendMessage(Component.text("You do not have permission to do that").color(NamedTextColor.DARK_RED));
+      source.audience().sendMessage(Component.text("You do not have permission to do that")
+          .color(NamedTextColor.DARK_RED));
       return Optional.of(CommandResult.failure());
     }
     return Optional.empty();

@@ -122,7 +122,8 @@ final class Sponge8MantleCommand extends MantleCommand implements Command.Raw {
         return CommandResult.success();
       case FAILURE:
       default:
-        return CommandResult.error(result.message().orElse(Component.text("An error occurred").color(NamedTextColor.DARK_RED)));
+        return CommandResult.error(result.message().orElse(Component.text("An error occurred")
+            .color(NamedTextColor.DARK_RED)));
     }
   }
 }
