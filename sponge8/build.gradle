@@ -26,8 +26,8 @@ if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePass
         }
         publications {
             mavenJava(MavenPublication) {
-                groupId = 'me.pietelite.mantle'
-                artifactId = 'sponge8'
+                groupId = 'net.whimxiqal'
+                artifactId = 'mantle-sponge8'
                 version = project.ext.fullVersion
                 from components.java
                 versionMapping {
@@ -41,7 +41,7 @@ if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePass
                 pom {
                     name = 'Mantle Sponge 8'
                     description = 'A Minecraft Command Framwork on top of ANTLR4'
-                    url = 'https://github.com/pietelite/mantle'
+                    url = 'https://github.com/whimxiqal/mantle'
                     licenses {
                         license {
                             name = 'MIT'
@@ -50,20 +50,20 @@ if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePass
                     }
                     developers {
                         developer {
-                            id = 'pietelite'
-                            name = 'PietElite'
-                            url = 'https://pietelite.me'
-                            email = 'pietelite@gmail.com'
+                            id = 'whimxiqal'
+                            name = 'whimxiqal'
+                            url = 'https://whimxiqal.net'
+                            email = 'whimxiqal@gmail.com'
                         }
                     }
                     scm {
-                        connection = 'scm:git:git://github.com/pietelite/mantle.git'
-                        developerConnection = 'scm:git:ssh://github.com:pietelite/mantle.git'
-                        url = 'https://github.com/pietelite/mantle'
+                        connection = 'scm:git:git://github.com/whimxiqal/mantle.git'
+                        developerConnection = 'scm:git:ssh://github.com:whimxiqal/mantle.git'
+                        url = 'https://github.com/whimxiqal/mantle'
                     }
                     issueManagement {
                         system = 'GitHub'
-                        url = 'https://github.com/pietelite/mantle/issues'
+                        url = 'https://github.com/whimxiqal/mantle/issues'
                     }
                 }
             }
