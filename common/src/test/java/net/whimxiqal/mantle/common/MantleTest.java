@@ -56,7 +56,6 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.whimxiqal.mantle.common.connector.CommandConnector;
 import net.whimxiqal.mantle.common.connector.CommandRoot;
-import net.whimxiqal.mantle.common.connector.HelpCommandInfo;
 import net.whimxiqal.mantle.common.connector.IdentifierInfo;
 import net.whimxiqal.mantle.common.parameter.Parameter;
 import net.whimxiqal.mantle.common.parameter.Parameters;
@@ -133,16 +132,6 @@ public class MantleTest {
             return CommandResult.success();
           }
         })
-        .helpInfo(HelpCommandInfo.builder()
-            .addDescription(RULE_crust, Component.text("Basic crust command"))
-            .addDescription(RULE_register, Component.text("Register a player for a thing"))
-            .addDescription(RULE_unregister, Component.text("Unregister a registered player"))
-            .addDescription(RULE_player, Component.text("Edit or see information about a player"))
-            .addDescription(RULE_playerInfo, Component.text("Lookup information about a player"))
-            .addDescription(RULE_playerEdit, Component.text("Edit information about a player"))
-            .addDescription(RULE_playerEditNickname, Component.text("Edit the nickname of a player"))
-            .addIgnored(RULE_identifier)
-            .build())
         .addPermission(RULE_register, "crust.register")
         .addPermission(RULE_unregister, "crust.unregister")
         .addPermission(RULE_player, "crust.player")
@@ -311,15 +300,6 @@ public class MantleTest {
     assertSuccess(instance().executeCommand(source, "crust player hermes edit nickname mars"));
     CrustPlugin.instance.revokePermission(playerUuid, "crust.player");
     assertFailure(instance().executeCommand(source, "crust player hermes edit nickname mars"));
-  }
-
-  @Test
-  void helpCommand() {
-    UUID playerUuid = UUID.randomUUID();
-    TestAudience audience = new TestAudience();
-    CommandSource source = new CommandSource(CommandSource.Type.PLAYER, playerUuid, audience);
-    assertSuccess(instance().executeCommand(source, "crust player ?"));
-    Assertions.assertTrue(audience.hasSentMessage());
   }
 
   @Test

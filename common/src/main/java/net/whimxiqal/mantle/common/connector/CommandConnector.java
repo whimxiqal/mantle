@@ -129,13 +129,6 @@ public interface CommandConnector {
   CommandExecutor executor();
 
   /**
-   * Information about what to tell users about how to use commands.
-   *
-   * @return the help command info
-   */
-  @Nullable HelpCommandInfo helpCommandInfo();
-
-  /**
    * A getter for the base parser rule context from the parser, given a certain command root.
    *
    * @param parser the parser
