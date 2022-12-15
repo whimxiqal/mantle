@@ -62,7 +62,6 @@ import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.TokenStream;
-import org.jetbrains.annotations.Nullable;
 
 class CommandConnectorImpl implements CommandConnector {
 
@@ -70,7 +69,6 @@ class CommandConnectorImpl implements CommandConnector {
   private final Class<? extends Lexer> lexerClass;
   private final Class<? extends Parser> parserClass;
   private final CommandExecutor executor;
-  private final HelpCommandInfo helpCommandInfo;
   private final Map<Integer, String> rulePermissions;
   private final IdentifierInfo<?> identifierInfo;
   private final Set<Integer> playerOnlyCommands;
@@ -80,7 +78,6 @@ class CommandConnectorImpl implements CommandConnector {
                        Class<? extends Lexer> lexerClass,
                        Class<? extends Parser> parserClass,
                        CommandExecutor executor,
-                       HelpCommandInfo helpCommandInfo,
                        Map<Integer, String> rulePermissions,
                        IdentifierInfo<?> identifierInfo,
                        Set<Integer> playerOnlyCommands,
@@ -89,7 +86,6 @@ class CommandConnectorImpl implements CommandConnector {
     this.lexerClass = lexerClass;
     this.parserClass = parserClass;
     this.executor = executor;
-    this.helpCommandInfo = helpCommandInfo;
     this.rulePermissions = rulePermissions;
     this.identifierInfo = identifierInfo;
     this.playerOnlyCommands = Collections.unmodifiableSet(playerOnlyCommands);
@@ -201,11 +197,6 @@ class CommandConnectorImpl implements CommandConnector {
   @Override
   public Map<Integer, String> rulePermissions() {
     return rulePermissions;
-  }
-
-  @Override
-  public @Nullable HelpCommandInfo helpCommandInfo() {
-    return helpCommandInfo;
   }
 
   @Override

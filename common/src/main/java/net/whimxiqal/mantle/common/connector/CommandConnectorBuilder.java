@@ -71,7 +71,6 @@ public class CommandConnectorBuilder implements Builder<CommandConnector> {
   private Class<? extends Lexer> lexerClass;
   private Class<? extends Parser> parserClass;
   private CommandExecutor executor;
-  private HelpCommandInfo helpCommandInfo;
   private IdentifierInfo<?> identifierInfo;
   private boolean useDefaultParseError = true;
 
@@ -98,7 +97,6 @@ public class CommandConnectorBuilder implements Builder<CommandConnector> {
         lexerClass,
         parserClass,
         executor,
-        helpCommandInfo,
         rulePermissions,
         identifierInfo,
         playerOnlyCommands,
@@ -122,11 +120,6 @@ public class CommandConnectorBuilder implements Builder<CommandConnector> {
 
   public CommandConnectorBuilder executor(CommandExecutor executor) {
     this.executor = executor;
-    return this;
-  }
-
-  public CommandConnectorBuilder helpInfo(HelpCommandInfo helpCommandInfo) {
-    this.helpCommandInfo = helpCommandInfo;
     return this;
   }
 

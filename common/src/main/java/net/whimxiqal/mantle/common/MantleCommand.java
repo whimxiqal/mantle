@@ -61,8 +61,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.whimxiqal.mantle.common.connector.CommandConnector;
 import net.whimxiqal.mantle.common.connector.CommandRoot;
-import net.whimxiqal.mantle.common.connector.HelpCommandInfo;
-import net.whimxiqal.mantle.common.phase.IdentifierListener;
 import net.whimxiqal.mantle.common.phase.IdentifierParsePhase;
 import net.whimxiqal.mantle.common.phase.ParsePhase;
 import net.whimxiqal.mantle.common.phase.PermissionParsePhase;
@@ -85,8 +83,6 @@ import org.antlr.v4.runtime.tree.TerminalNode;
  */
 public class MantleCommand {
 
-  private static final String[] HELP_COMMAND_ARGS = {"?", "help"};
-
   private final CommandConnector connector;
   private final CommandRoot root;
 
@@ -102,9 +98,6 @@ public class MantleCommand {
   @SuppressWarnings("checkstyle:MissingJavadocMethod")
   public final CommandResult process(CommandSource source, String justArguments) {
     String arguments = root.baseCommand() + " " + justArguments;
-    if (executeHelpCommand(source, arguments)) {
-      return CommandResult.success();
-    }
 
     CharStream input = CharStreams.fromString(arguments);
 
@@ -204,7 +197,7 @@ public class MantleCommand {
         .map(s -> s.substring(1, s.length() - 1))  // get rid of the starting and ending quotes
         .forEach(possibleCompletions::add);
 
-    // Rules
+    // Identifiers
     // the index of the rule we want to complete is the one after already completed ones
     int completableIndex = collection.rulePositions.size();
     for (Map.Entry<Integer, List<Integer>> rule : collection.rules.entrySet()) {
@@ -264,63 +257,6 @@ public class MantleCommand {
       }
     }
     return CaretTokenIndexResult.none();
-  }
-
-  private boolean executeHelpCommand(CommandSource source, String argumentsWithHelp) {
-    HelpCommandInfo helpCommandInfo = connector.helpCommandInfo();
-    if (helpCommandInfo == null) {
-      return false;
-    }
-    String arguments = "";
-    boolean isHelpCommand = false;
-    for (String arg : HELP_COMMAND_ARGS) {
-      int idx = argumentsWithHelp.length() - arg.length() - 1;
-      if (argumentsWithHelp.length() > arg.length()
-          && argumentsWithHelp.substring(idx).equals(" " + arg)) {
-        arguments = argumentsWithHelp.substring(0, idx).trim();
-        isHelpCommand = true;
-        break;
-      }
-    }
-    if (!isHelpCommand) {
-      return false;
-    }
-
-    CharStream input = CharStreams.fromString(arguments);
-
-    Lexer lexer = connector.lexer(input);
-    TokenStream tokens = new CommonTokenStream(lexer);
-    Parser parser = connector.parser(tokens);
-
-    parser.removeErrorListeners();
-    MantleErrorListener errorListener = new MantleErrorListener();
-    parser.addErrorListener(errorListener);
-    ParserRuleContext parseTree = connector.baseContext(parser, root);
-
-    IdentifierTrackerImpl tracker = new IdentifierTrackerImpl();
-    CommandContext context = new CommandContextImpl(source, tracker);
-
-    Optional<CommandResult> phaseResult = runPhases(source, parseTree, tracker, false);
-    if (phaseResult.isPresent()) {
-      return phaseResult.get().type() == CommandResult.Type.SUCCESS;
-    }
-
-    DescriptionListener descriptionListener = new DescriptionListener(helpCommandInfo);
-    ParseTreeWalker walker = new ParseTreeWalker();
-    walker.walk(descriptionListener, parseTree);
-
-    Optional<Component> description = descriptionListener.description();
-    if (description.isPresent()) {
-      source.audience().sendMessage(helpCommandInfo.header());
-      source.audience().sendMessage(Component.text("Description: ").append(description.get()));
-      List<String> next = completionsFor(context, parser, parseTree, arguments, true);
-      for (String n : next) {
-        source.audience().sendMessage(Component.text("> ").append(Component.text(n)));
-      }
-    } else {
-      source.audience().sendMessage(Component.text("No help command found"));
-    }
-    return true;
   }
 
   private static class CaretTokenIndexResult {
