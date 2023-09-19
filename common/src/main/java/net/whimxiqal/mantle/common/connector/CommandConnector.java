@@ -116,7 +116,7 @@ public interface CommandConnector {
   IdentifierInfo<?> identifierInfo();
 
   /**
-   * Generate a message that describes a syntax error, given some information about the input
+   * Generate a message that describes a syntax error, given some information about the input.
    *
    * @param invalidInput the word or phrase that was invalid
    * @param optionList   the readable list of options that could replace the invalid input,
