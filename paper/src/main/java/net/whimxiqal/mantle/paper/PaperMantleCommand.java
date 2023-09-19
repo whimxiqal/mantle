@@ -78,7 +78,9 @@ final class PaperMantleCommand extends Command {
   }
 
   @Override
-  public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, String[] args) throws IllegalArgumentException {
+  public @NotNull List<String> tabComplete(@NotNull CommandSender sender,
+                                           @NotNull String alias,
+                                           String[] args) throws IllegalArgumentException {
     return mantleCommand.complete(convertSender(sender), String.join(" ", Arrays.asList(args)));
   }
 

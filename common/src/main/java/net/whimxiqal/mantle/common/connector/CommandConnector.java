@@ -115,6 +115,14 @@ public interface CommandConnector {
    */
   IdentifierInfo<?> identifierInfo();
 
+  /**
+   * Generate a message that describes a syntax error, given some information about the input
+   *
+   * @param invalidInput the word or phrase that was invalid
+   * @param optionList   the readable list of options that could replace the invalid input,
+   *                     or null if there are no options
+   * @return the message
+   */
   default Component syntaxError(String invalidInput, @Nullable String optionList) {
     Component component = Component.text("Unexpected input: ")
         .append(Component.text(invalidInput));

@@ -216,7 +216,8 @@ public class MantleCommand {
             Collections.singleton(identifierRule),
             connector.identifierInfo().ignoredCompletionTokens());
 
-        CaretTokenIndexResult backtrackCaretTokenIndexResult = getCaretTokenIndex(backtrackParseTree, backtrackArguments.length());
+        CaretTokenIndexResult backtrackCaretTokenIndexResult = getCaretTokenIndex(backtrackParseTree,
+            backtrackArguments.length());
         if (backtrackCaretTokenIndexResult.index < 0) {
           break;
         }

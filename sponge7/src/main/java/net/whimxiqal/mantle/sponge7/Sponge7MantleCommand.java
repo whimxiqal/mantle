@@ -74,12 +74,14 @@ final class Sponge7MantleCommand extends MantleCommand implements CommandCallabl
   }
 
   @Override
-  public @NotNull CommandResult process(org.spongepowered.api.command.@NotNull CommandSource source, @NotNull String arguments) {
+  public @NotNull CommandResult process(org.spongepowered.api.command.@NotNull CommandSource source,
+                                        @NotNull String arguments) {
     return convertResult(super.process(convertCause(source), arguments));
   }
 
   @Override
-  public @NotNull List<String> getSuggestions(org.spongepowered.api.command.@NotNull CommandSource source, @NotNull String arguments, @Nullable Location<World> targetPosition) {
+  public @NotNull List<String> getSuggestions(org.spongepowered.api.command.@NotNull CommandSource source,
+                                              @NotNull String arguments, @Nullable Location<World> targetPosition) {
     return complete(convertCause(source), arguments);
   }
 

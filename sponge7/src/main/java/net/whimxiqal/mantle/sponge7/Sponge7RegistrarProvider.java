@@ -1,4 +1,4 @@
-package net.whimxiqal.mantle.sponge7;/*
+/*
  * MIT License
  *
  * Copyright (c) Pieter Svenson
@@ -21,6 +21,8 @@ package net.whimxiqal.mantle.sponge7;/*
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
+package net.whimxiqal.mantle.sponge7;
 
 import net.whimxiqal.mantle.common.CommandRegistrar;
 import net.whimxiqal.mantle.common.Mantle;
