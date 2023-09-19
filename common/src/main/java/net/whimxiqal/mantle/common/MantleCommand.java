@@ -57,8 +57,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.whimxiqal.mantle.common.connector.CommandConnector;
 import net.whimxiqal.mantle.common.connector.CommandRoot;
 import net.whimxiqal.mantle.common.phase.IdentifierParsePhase;
@@ -74,7 +72,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 /**
@@ -101,20 +98,20 @@ public class MantleCommand {
 
     CharStream input = CharStreams.fromString(arguments);
 
+    MantleErrorListener errorListener = new MantleErrorListener(connector, arguments);
+
     Lexer lexer = connector.lexer(input);
+    lexer.removeErrorListeners();
+    lexer.addErrorListener(errorListener);
+
     TokenStream tokens = new CommonTokenStream(lexer);
     Parser parser = connector.parser(tokens);
-
     parser.removeErrorListeners();
-    MantleErrorListener errorListener = new MantleErrorListener();
     parser.addErrorListener(errorListener);
     ParseTree parseTree = connector.baseContext(parser, root);
 
     if (errorListener.hasError()) {
-      Optional<String> message = errorListener.message();
-      if (message.isPresent() && connector.useDefaultParseError()) {
-        source.audience().sendMessage(Component.text(message.get()).color(NamedTextColor.DARK_RED));
-      }
+      errorListener.sendErrorMessage(source);
       return CommandResult.failure();
     }
 
@@ -145,10 +142,15 @@ public class MantleCommand {
     TokenStream tokens = new CommonTokenStream(lexer);
     Parser parser = connector.parser(tokens);
 
+    lexer.removeErrorListeners();
     parser.removeErrorListeners();
-    MantleErrorListener errorListener = new MantleErrorListener();
-    parser.addErrorListener(errorListener);
+    MantleErrorListener errorListener = new MantleErrorListener(connector, arguments);
+    lexer.addErrorListener(errorListener);
     ParserRuleContext parseTree = connector.baseContext(parser, root);
+
+    if (errorListener.hasError()) {
+      return Collections.emptyList();
+    }
 
     IdentifierTrackerImpl tracker = new IdentifierTrackerImpl();
     CommandContext context = new CommandContextImpl(source, tracker);
@@ -157,14 +159,14 @@ public class MantleCommand {
     if (result.isPresent()) {
       return Collections.emptyList();
     }
-
     return completionsFor(context, parser, parseTree, trimmedArgs, argumentsEndInWhitespace);
   }
 
   private List<String> completionsFor(CommandContext context, Parser parser, ParserRuleContext parseTree,
                                       String arguments, boolean argumentsEndInWhitespace) {
+    final int identifierRule = connector.identifierInfo().identifierRule();
     CodeCompletionCore core = new CodeCompletionCore(parser,
-        Collections.singleton(connector.identifierInfo().identifierRule()),
+        Collections.singleton(identifierRule),
         connector.identifierInfo().ignoredCompletionTokens());
 
     CaretTokenIndexResult caretTokenIndexResult;
@@ -197,10 +199,62 @@ public class MantleCommand {
         .map(s -> s.substring(1, s.length() - 1))  // get rid of the starting and ending quotes
         .forEach(possibleCompletions::add);
 
-    // Identifiers
-    // the index of the rule we want to complete is the one after already completed ones
-    int completableIndex = collection.rulePositions.size();
+//    // ** Identifiers **
     for (Map.Entry<Integer, List<Integer>> rule : collection.rules.entrySet()) {
+      // TODO We could probably use the identifier parse phase in some way to get this information
+      //  rather than this horrible "backtrack" garbage
+
+      // the index of the rule we want to complete is the one after already completed ones.
+      // Since core.collectCandidates does not keep track of how many completed identifiers there were,
+      // we must backtrack through them, completing the command at previous points, and count how many times
+      // we get a completed identifier, but with the same original rule call stack.
+      int previousCompletedIdentifiers = 0;
+      CodeCompletionCore.CandidatesCollection backtrackCollection = collection;
+      String backtrackArguments = arguments;
+      while (backtrackCollection.rulePositions.containsKey(identifierRule)) {
+        // we have a completed identifier
+        final int endingColumn = backtrackCollection.rulePositions.get(identifierRule).get(1);
+        backtrackArguments = backtrackArguments.substring(0, endingColumn);
+        if (backtrackArguments.isEmpty()) {
+          break;
+        }
+
+        CharStream backtrackInput = CharStreams.fromString(backtrackArguments);
+
+        Lexer backtrackLexer = connector.lexer(backtrackInput);
+        TokenStream backtrackTokens = new CommonTokenStream(backtrackLexer);
+        Parser backtrackParser = connector.parser(backtrackTokens);
+
+        backtrackLexer.removeErrorListeners();
+        backtrackParser.removeErrorListeners();
+        MantleErrorListener errorListener = new MantleErrorListener(connector, backtrackArguments);
+        backtrackLexer.addErrorListener(errorListener);
+
+        ParserRuleContext backtrackParseTree = connector.baseContext(backtrackParser, root);
+
+        if (errorListener.hasError()) {
+          return Collections.emptyList();
+        }
+
+        CodeCompletionCore backtrackCore = new CodeCompletionCore(backtrackParser,
+            Collections.singleton(identifierRule),
+            connector.identifierInfo().ignoredCompletionTokens());
+
+        CaretTokenIndexResult backtrackCaretTokenIndexResult = getCaretTokenIndex(backtrackParseTree, backtrackArguments.length());
+        if (backtrackCaretTokenIndexResult.index < 0) {
+          break;
+        }
+        backtrackCollection = backtrackCore.collectCandidates(backtrackCaretTokenIndexResult.index, backtrackParseTree);
+
+        List<Integer> backtrackCallStack = backtrackCollection.rules.get(rule.getKey());  // could be null
+        if (!rule.getValue().equals(backtrackCallStack)) {
+          // check if we are not in the same rule anymore, so none of the other previous identifiers are relevant,
+          // including the one we just found
+          break;
+        }
+        previousCompletedIdentifiers++;
+      }
+      int completableIndex = previousCompletedIdentifiers;  // the index of the last completed identifier + 1
       if (rule.getValue().isEmpty()) {
         continue;
       }
@@ -211,13 +265,14 @@ public class MantleCommand {
     }
     return possibleCompletions.stream()
         .filter(s -> s.toLowerCase(Locale.ROOT).startsWith(currentText.toLowerCase(Locale.ENGLISH)))
+        .map(s -> s.contains(" ") ? "\"" + s + "\"" : s)
         .collect(Collectors.toList());
   }
 
   private Optional<CommandResult> runPhases(CommandSource source, ParseTree tree,
                                             IdentifierTrackerImpl tracker, boolean validate) {
     ParsePhase[] phases = {
-        new PermissionParsePhase(connector),
+        new PermissionParsePhase(connector, validate),
         new PlayerOnlyParsePhase(connector),
         new IdentifierParsePhase(connector, tracker, validate),
     };

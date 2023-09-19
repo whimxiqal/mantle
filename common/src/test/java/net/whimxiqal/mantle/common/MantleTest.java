@@ -63,26 +63,23 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static net.whimxiqal.mantle.common.CrustParser.IdentifierContext;
-import static net.whimxiqal.mantle.common.CrustParser.RULE_age;
-import static net.whimxiqal.mantle.common.CrustParser.RULE_core;
-import static net.whimxiqal.mantle.common.CrustParser.RULE_crust;
-import static net.whimxiqal.mantle.common.CrustParser.RULE_identifier;
-import static net.whimxiqal.mantle.common.CrustParser.RULE_player;
-import static net.whimxiqal.mantle.common.CrustParser.RULE_playerEdit;
-import static net.whimxiqal.mantle.common.CrustParser.RULE_playerEditNickname;
-import static net.whimxiqal.mantle.common.CrustParser.RULE_playerInfo;
-import static net.whimxiqal.mantle.common.CrustParser.RULE_register;
-import static net.whimxiqal.mantle.common.CrustParser.RULE_unregister;
+
+import static net.whimxiqal.mantle.common.CrustParser.*;
 
 public class MantleTest {
 
   private static final List<String> COLORS = new LinkedList<>();
+  private static final List<String> COLOR_COMPLETIONS = new LinkedList<>();
 
   static {
     COLORS.add("blue");
+    COLOR_COMPLETIONS.add("blue");
     COLORS.add("green");
+    COLOR_COMPLETIONS.add("green");
     COLORS.add("red");
+    COLOR_COMPLETIONS.add("red");
+    COLORS.add("canary yellow");
+    COLOR_COMPLETIONS.add("\"canary yellow\"");
   }
 
   @BeforeAll
@@ -97,8 +94,10 @@ public class MantleTest {
         .executor(context -> new CrustBaseVisitor<CommandResult>() {
           @Override
           public CommandResult visitRegister(CrustParser.RegisterContext ctx) {
-            String playerName = context.identifiers().get(0);
-            boolean added = CrustPlugin.instance.players.add(playerName);
+            String playerName1 = context.identifiers().get(0);
+            String playerName2 = ctx.name.getText();
+            Assertions.assertEquals(playerName1, playerName2);
+            boolean added = CrustPlugin.instance.players.add(playerName1);
             if (added) {
               context.source().audience().sendMessage(Component.text("The player was added"));
               return CommandResult.success();
@@ -110,7 +109,10 @@ public class MantleTest {
 
           @Override
           public CommandResult visitUnregister(CrustParser.UnregisterContext ctx) {
-            boolean removed = CrustPlugin.instance.players.remove(context.identifiers().get(Parameters.PLAYER, 0));
+            String playerName1 = context.identifiers().get(Parameters.PLAYER, 0);
+            String playerName2 = ctx.name.getText();
+            Assertions.assertEquals(playerName1, playerName2);
+            boolean removed = CrustPlugin.instance.players.remove(playerName1);
             if (removed) {
               context.source().audience().sendMessage(Component.text("The player was removed"));
               return CommandResult.success();
@@ -144,8 +146,10 @@ public class MantleTest {
             .standardExtractor(IdentifierContext::ident)
             .registerCompletion(RULE_player, 0, Parameters.PLAYER)
             .registerCompletion(RULE_register, 1, "color")
+            .registerCompletion(RULE_register, 3, Parameters.PLAYER)
             .registerCompletion(RULE_unregister, 0, Parameters.PLAYER)
             .registerCompletion(RULE_core, 0, "color")
+            .registerCompletion(RULE_playerEditColor, 0, "color")
             .registerCompletion(RULE_age, 0, Parameters.INTEGER)
             .addIgnoredCompletionToken(CrustLexer.SINGLE_QUOTE)
             .addIgnoredCompletionToken(CrustLexer.DOUBLE_QUOTE)
@@ -178,7 +182,8 @@ public class MantleTest {
     CrustPlugin.instance.players.add("belkar1");
 
     CommandSource source = new CommandSource(CommandSource.Type.CONSOLE, null, new TestAudience());
-    List<String> completions = instance().completeCommand(source, "crust");
+    List<String> completions;
+    completions = instance().completeCommand(source, "crust");
     Assertions.assertEquals(4, completions.size());
     Assertions.assertTrue(completions.contains("register"));
     Assertions.assertTrue(completions.contains("unregister"));
@@ -194,7 +199,7 @@ public class MantleTest {
     Assertions.assertTrue(completions.contains("unregister"));
 
     completions = instance().completeCommand(source, "crust player");
-    Assertions.assertEquals(1, completions.size());
+    Assertions.assertEquals(1, completions.size(), "List was not size 1: " + completions);
     Assertions.assertTrue(completions.contains("player"));
 
     completions = instance().completeCommand(source, "crust player ");
@@ -212,7 +217,7 @@ public class MantleTest {
     Assertions.assertTrue(completions.contains("PietElite"));
 
     completions = instance().completeCommand(source, "crust player golem ");
-    Assertions.assertEquals(2, completions.size());
+    Assertions.assertEquals(2, completions.size(), completions.toString());
     Assertions.assertTrue(completions.contains("info"));
     Assertions.assertTrue(completions.contains("edit"));
 
@@ -221,9 +226,29 @@ public class MantleTest {
 
     completions = instance().completeCommand(source, "crust register tornado ");
     Assertions.assertEquals(COLORS.size(), completions.size());
-    for (String color : COLORS) {
+    for (String color : COLOR_COMPLETIONS) {
       Assertions.assertTrue(completions.contains(color));
     }
+
+    completions = instance().completeCommand(source, "crust register a b c ");
+    Assertions.assertEquals(CrustPlugin.instance.players.size(), completions.size());
+    for (String player : CrustPlugin.instance.players) {
+      Assertions.assertTrue(completions.contains(player));
+    }
+
+    completions = instance().completeCommand(source, "crust player name edit color ");
+    Assertions.assertEquals(COLORS.size(), completions.size());
+    for (String color : COLOR_COMPLETIONS) {
+      Assertions.assertTrue(completions.contains(color));
+    }
+
+    completions = instance().completeCommand(source, "crust player name edit color b");
+    Assertions.assertEquals(1, completions.size());
+    Assertions.assertEquals("blue", completions.get(0));
+
+    completions = instance().completeCommand(source, "crust player name edit color blue ");
+    Assertions.assertTrue(completions.isEmpty());
+
   }
 
   @Test
@@ -231,7 +256,7 @@ public class MantleTest {
     CommandSource source = new CommandSource(CommandSource.Type.CONSOLE, null, new TestAudience());
     List<String> completions = instance().completeCommand(source, "core ");
     Assertions.assertEquals(COLORS.size(), completions.size());
-    for (String color : COLORS) {
+    for (String color : COLOR_COMPLETIONS) {
       Assertions.assertTrue(completions.contains(color));
     }
   }
@@ -320,10 +345,28 @@ public class MantleTest {
     assertSuccess(instance().executeCommand(source, "crust register double green"));
     // purple is not a valid color
     assertFailure(instance().executeCommand(source, "crust register trouble purple"));
+    // typo
+    assertFailure(instance().executeCommand(source, "crust registre double green"));
     // 10 is a valid number
     assertSuccess(instance().executeCommand(source, "crust age 10"));
     // 9 and 3/4 is not a valid number (but is a valid train platform!)
     assertFailure(instance().executeCommand(source, "crust age 9&3/4"));
+  }
+
+  @Test
+  void spacesInParameter() {
+    UUID playerUuid = UUID.randomUUID();
+    CommandSource source = new CommandSource(CommandSource.Type.PLAYER, playerUuid, new TestAudience());
+
+    List<String> completions = instance().completeCommand(source, "crust register thing ");
+    Assertions.assertTrue(completions.contains("\"canary yellow\""));
+    // needs quotes
+    assertFailure(instance().executeCommand(source, "crust register thing canary yellow"));
+    assertSuccess(instance().executeCommand(source, "crust register thing \"canary yellow\""));
+
+    // still want to allow completion with quotes even if it doesn't start that way
+    completions = instance().completeCommand(source, "crust register thing ca");
+    Assertions.assertTrue(completions.contains("\"canary yellow\""));
   }
 
   @Test

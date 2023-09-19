@@ -123,11 +123,11 @@ class IdentifierInfoImpl<T extends ParserRuleContext> implements IdentifierInfo<
   @Override
   @Nullable
   public Parameter parameterAt(int callerRule, int identifierIndex) {
-    Map<Integer, String> completionTable1 = parameterNameTable.get(identifierIndex);
+    Map<Integer, String> completionTable1 = parameterNameTable.get(callerRule);
     if (completionTable1 == null) {
       return null;
     }
-    String parameterName = completionTable1.get(callerRule);
+    String parameterName = completionTable1.get(identifierIndex);
     return parameters.get(parameterName);
   }
 

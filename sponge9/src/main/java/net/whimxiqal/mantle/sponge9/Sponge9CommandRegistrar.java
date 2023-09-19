@@ -46,62 +46,40 @@
  * SOFTWARE.
  */
 
-package net.whimxiqal.mantle.common;
+package net.whimxiqal.mantle.sponge9;
 
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import net.kyori.adventure.text.Component;
+import net.whimxiqal.mantle.common.CommandRegistrar;
 import net.whimxiqal.mantle.common.connector.CommandConnector;
-import org.antlr.v4.runtime.BaseErrorListener;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.Recognizer;
-import org.antlr.v4.runtime.Token;
+import net.whimxiqal.mantle.common.connector.CommandRoot;
+import org.spongepowered.api.command.Command;
+import org.spongepowered.api.event.lifecycle.RegisterCommandEvent;
+import org.spongepowered.plugin.PluginContainer;
 
-class MantleErrorListener extends BaseErrorListener {
+class Sponge9CommandRegistrar implements CommandRegistrar {
 
-  private final CommandConnector connector;
-  private final String command;
-  private Component errorMessage;
+  private final PluginContainer pluginContainer;
+  private final RegisterCommandEvent<Command.Raw> rawRegisterCommandEvent;
 
-  MantleErrorListener(CommandConnector connector, String command) {
-    this.connector = connector;
-    this.command = command;
+  public Sponge9CommandRegistrar(PluginContainer pluginContainer,
+                                 RegisterCommandEvent<Command.Raw> rawRegisterCommandEvent) {
+    this.pluginContainer = pluginContainer;
+    this.rawRegisterCommandEvent = rawRegisterCommandEvent;
   }
 
   @Override
-  public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line,
-                          int charPositionInLine, String msg, RecognitionException e) {
-    if (offendingSymbol == null || !(offendingSymbol instanceof Token) || e == null) {
-      this.errorMessage = connector.syntaxError(command.substring(charPositionInLine), null);
-      return;
-    }
-    List<String> options = e.getExpectedTokens().getIntervals()
-        .stream()
-        .flatMap(interval -> IntStream.range(interval.a, interval.b).boxed())
-        .map(recognizer.getVocabulary()::getLiteralName)
-        .map(literal -> literal.substring(1, literal.length() - 1))  // cut off single quotes
-        .collect(Collectors.toList());
-    String optionsString;
-    if (options.size() > 5) {
-      optionsString = String.join("|", options.subList(0, 5)) + " ...";
-    } else {
-      optionsString = String.join("|", options);
-    }
-    this.errorMessage = connector.syntaxError(command.substring(charPositionInLine), optionsString);
-  }
-
-  public boolean hasError() {
-    return errorMessage != null;
-  }
-
-  public Component errorMessage() {
-    return errorMessage;
-  }
-
-  public void sendErrorMessage(CommandSource source) {
-    if (errorMessage != null) {
-      source.audience().sendMessage(errorMessage);
+  public void register(CommandConnector connector) {
+    for (CommandRoot root : connector.roots()) {
+      Sponge9MantleCommand command = new Sponge9MantleCommand(connector, root);
+      List<String> aliases = root.aliases();
+      String[] otherAliases = new String[0];
+      if (aliases != null) {
+        otherAliases = aliases.toArray(otherAliases);
+      }
+      rawRegisterCommandEvent.register(pluginContainer, command,
+          root.baseCommand(),
+          otherAliases);
     }
   }
+
 }

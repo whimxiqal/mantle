@@ -48,8 +48,16 @@
 
 package net.whimxiqal.mantle.sponge8;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.whimxiqal.mantle.common.Logger;
+import org.spongepowered.api.Sponge;
 
 class Sponge8Logger implements Logger {
+
+  @Override
+  public void error(String message) {
+    Sponge.server().sendMessage(Component.text("[Mantle] [ERROR] " + message).color(NamedTextColor.RED));
+  }
 
 }

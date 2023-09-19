@@ -46,62 +46,65 @@
  * SOFTWARE.
  */
 
-package net.whimxiqal.mantle.common;
+package net.whimxiqal.mantle.paper;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import net.kyori.adventure.text.Component;
+import java.lang.reflect.Field;
+import java.util.Locale;
+import net.whimxiqal.mantle.common.CommandRegistrar;
 import net.whimxiqal.mantle.common.connector.CommandConnector;
-import org.antlr.v4.runtime.BaseErrorListener;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.Recognizer;
-import org.antlr.v4.runtime.Token;
+import net.whimxiqal.mantle.common.connector.CommandRoot;
+import org.bukkit.Bukkit;
+import org.bukkit.command.CommandMap;
+import org.bukkit.command.SimpleCommandMap;
+import org.bukkit.plugin.Plugin;
 
-class MantleErrorListener extends BaseErrorListener {
+class PaperCommandRegistrar implements CommandRegistrar {
 
-  private final CommandConnector connector;
-  private final String command;
-  private Component errorMessage;
+  private final Plugin plugin;
+  private final CommandMap asyncCommandMap;
+  private CommandMap commandMap;
 
-  MantleErrorListener(CommandConnector connector, String command) {
-    this.connector = connector;
-    this.command = command;
+  public PaperCommandRegistrar(Plugin plugin) {
+    this.plugin = plugin;
+    this.asyncCommandMap = new SimpleCommandMap(Bukkit.getServer());
+    Field commandMapField;
+    try {
+      commandMapField = Bukkit.getServer().getClass().getDeclaredField("commandMap");
+    } catch (NoSuchFieldException e) {
+      e.printStackTrace();
+      return;
+    }
+    commandMapField.setAccessible(true);
+    try {
+      commandMap = (CommandMap) commandMapField.get(Bukkit.getServer());
+    } catch (IllegalAccessException e) {
+      e.printStackTrace();
+    }
   }
 
   @Override
-  public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line,
-                          int charPositionInLine, String msg, RecognitionException e) {
-    if (offendingSymbol == null || !(offendingSymbol instanceof Token) || e == null) {
-      this.errorMessage = connector.syntaxError(command.substring(charPositionInLine), null);
-      return;
+  public void register(CommandConnector connector) {
+    if (commandMap == null) {
+      throw new RuntimeException("Bukkit commandMap could not be found");
     }
-    List<String> options = e.getExpectedTokens().getIntervals()
-        .stream()
-        .flatMap(interval -> IntStream.range(interval.a, interval.b).boxed())
-        .map(recognizer.getVocabulary()::getLiteralName)
-        .map(literal -> literal.substring(1, literal.length() - 1))  // cut off single quotes
-        .collect(Collectors.toList());
-    String optionsString;
-    if (options.size() > 5) {
-      optionsString = String.join("|", options.subList(0, 5)) + " ...";
-    } else {
-      optionsString = String.join("|", options);
+    // add to server's existing command map for normal execution
+    for (CommandRoot root : connector.roots()) {
+      PaperMantleCommand command = new PaperMantleCommand(connector, root);
+      commandMap.register(root.baseCommand(), command);
+      for (String alias : root.aliases()) {
+        commandMap.register(alias, plugin.getName().toLowerCase(Locale.ENGLISH), command);
+      }
     }
-    this.errorMessage = connector.syntaxError(command.substring(charPositionInLine), optionsString);
-  }
-
-  public boolean hasError() {
-    return errorMessage != null;
-  }
-
-  public Component errorMessage() {
-    return errorMessage;
-  }
-
-  public void sendErrorMessage(CommandSource source) {
-    if (errorMessage != null) {
-      source.audience().sendMessage(errorMessage);
+    // add to custom async map for async executions
+    synchronized (asyncCommandMap) {
+      for (CommandRoot root : connector.roots()) {
+        PaperMantleCommand asyncCommand = new PaperMantleCommand(connector, root);
+        asyncCommandMap.register(root.baseCommand(), asyncCommand);
+        for (String alias : root.aliases()) {
+          asyncCommandMap.register(alias, plugin.getName().toLowerCase(Locale.ENGLISH), asyncCommand);
+        }
+      }
     }
   }
+
 }

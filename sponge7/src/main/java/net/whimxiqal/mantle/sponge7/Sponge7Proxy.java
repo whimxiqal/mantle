@@ -1,4 +1,4 @@
-/*
+package net.whimxiqal.mantle.sponge7;/*
  * MIT License
  *
  * Copyright (c) Pieter Svenson
@@ -45,63 +45,59 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
-package net.whimxiqal.mantle.common;
 
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import net.kyori.adventure.text.Component;
-import net.whimxiqal.mantle.common.connector.CommandConnector;
-import org.antlr.v4.runtime.BaseErrorListener;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.Recognizer;
-import org.antlr.v4.runtime.Token;
+import net.whimxiqal.mantle.common.Logger;
+import net.whimxiqal.mantle.common.Proxy;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.world.World;
 
-class MantleErrorListener extends BaseErrorListener {
+class Sponge7Proxy implements Proxy {
 
-  private final CommandConnector connector;
-  private final String command;
-  private Component errorMessage;
+  private final Logger logger = new Sponge7Logger();
 
-  MantleErrorListener(CommandConnector connector, String command) {
-    this.connector = connector;
-    this.command = command;
+  @Override
+  public Logger logger() {
+    return logger;
   }
 
   @Override
-  public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line,
-                          int charPositionInLine, String msg, RecognitionException e) {
-    if (offendingSymbol == null || !(offendingSymbol instanceof Token) || e == null) {
-      this.errorMessage = connector.syntaxError(command.substring(charPositionInLine), null);
-      return;
+  public boolean hasPermission(UUID playerUuid, String permission) throws NoSuchElementException {
+    Optional<Player> player = Sponge.getServer().getPlayer(playerUuid);
+    if (!player.isPresent()) {
+      throw new NoSuchElementException("No player found with uuid " + playerUuid);
     }
-    List<String> options = e.getExpectedTokens().getIntervals()
+    return player.get().hasPermission(permission);
+  }
+
+  @Override
+  public List<String> onlinePlayerNames() {
+    return Sponge.getServer().getOnlinePlayers()
         .stream()
-        .flatMap(interval -> IntStream.range(interval.a, interval.b).boxed())
-        .map(recognizer.getVocabulary()::getLiteralName)
-        .map(literal -> literal.substring(1, literal.length() - 1))  // cut off single quotes
+        .map(Player::getName)
         .collect(Collectors.toList());
-    String optionsString;
-    if (options.size() > 5) {
-      optionsString = String.join("|", options.subList(0, 5)) + " ...";
-    } else {
-      optionsString = String.join("|", options);
-    }
-    this.errorMessage = connector.syntaxError(command.substring(charPositionInLine), optionsString);
   }
 
-  public boolean hasError() {
-    return errorMessage != null;
+  @Override
+  public boolean isOnlinePlayer(String candidate) {
+    return Sponge.getServer().getPlayer(candidate).map(Player::isOnline).orElse(false);
   }
 
-  public Component errorMessage() {
-    return errorMessage;
+  @Override
+  public List<String> worldNames() {
+    return Sponge.getServer().getWorlds()
+        .stream()
+        .map(World::getName)
+        .collect(Collectors.toList());
   }
 
-  public void sendErrorMessage(CommandSource source) {
-    if (errorMessage != null) {
-      source.audience().sendMessage(errorMessage);
-    }
+  @Override
+  public boolean isWorldName(String candidate) {
+    return Sponge.getServer().getWorld(candidate).isPresent();
   }
 }

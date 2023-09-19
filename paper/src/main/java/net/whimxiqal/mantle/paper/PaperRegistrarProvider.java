@@ -46,62 +46,30 @@
  * SOFTWARE.
  */
 
-package net.whimxiqal.mantle.common;
+package net.whimxiqal.mantle.paper;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import net.kyori.adventure.text.Component;
-import net.whimxiqal.mantle.common.connector.CommandConnector;
-import org.antlr.v4.runtime.BaseErrorListener;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.Recognizer;
-import org.antlr.v4.runtime.Token;
+import net.whimxiqal.mantle.common.CommandRegistrar;
+import net.whimxiqal.mantle.common.Mantle;
+import org.bukkit.plugin.java.JavaPlugin;
 
-class MantleErrorListener extends BaseErrorListener {
+/**
+ * A static provider for a {@link CommandRegistrar} for Bukkit.
+ */
+public final class PaperRegistrarProvider {
 
-  private final CommandConnector connector;
-  private final String command;
-  private Component errorMessage;
-
-  MantleErrorListener(CommandConnector connector, String command) {
-    this.connector = connector;
-    this.command = command;
+  private PaperRegistrarProvider() {
   }
 
-  @Override
-  public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line,
-                          int charPositionInLine, String msg, RecognitionException e) {
-    if (offendingSymbol == null || !(offendingSymbol instanceof Token) || e == null) {
-      this.errorMessage = connector.syntaxError(command.substring(charPositionInLine), null);
-      return;
-    }
-    List<String> options = e.getExpectedTokens().getIntervals()
-        .stream()
-        .flatMap(interval -> IntStream.range(interval.a, interval.b).boxed())
-        .map(recognizer.getVocabulary()::getLiteralName)
-        .map(literal -> literal.substring(1, literal.length() - 1))  // cut off single quotes
-        .collect(Collectors.toList());
-    String optionsString;
-    if (options.size() > 5) {
-      optionsString = String.join("|", options.subList(0, 5)) + " ...";
-    } else {
-      optionsString = String.join("|", options);
-    }
-    this.errorMessage = connector.syntaxError(command.substring(charPositionInLine), optionsString);
+  /**
+   * Get a {@link CommandRegistrar} for Bukkit plugins.
+   *
+   * @param plugin the plugin
+   * @return a registrar with which to register commands
+   */
+  public static CommandRegistrar get(JavaPlugin plugin) {
+    PaperProxy proxy = new PaperProxy();
+    Mantle.setProxy(proxy);
+    return new PaperCommandRegistrar(plugin);
   }
 
-  public boolean hasError() {
-    return errorMessage != null;
-  }
-
-  public Component errorMessage() {
-    return errorMessage;
-  }
-
-  public void sendErrorMessage(CommandSource source) {
-    if (errorMessage != null) {
-      source.audience().sendMessage(errorMessage);
-    }
-  }
 }

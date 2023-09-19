@@ -55,6 +55,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
+import net.kyori.adventure.text.Component;
 import net.whimxiqal.mantle.common.Builder;
 import net.whimxiqal.mantle.common.CommandExecutor;
 import org.antlr.v4.runtime.Lexer;
@@ -72,7 +74,7 @@ public class CommandConnectorBuilder implements Builder<CommandConnector> {
   private Class<? extends Parser> parserClass;
   private CommandExecutor executor;
   private IdentifierInfo<?> identifierInfo;
-  private boolean useDefaultParseError = true;
+  private BiFunction<String, String, Component> syntaxErrorFunction;
 
   /**
    * Build {@link CommandConnector}.
@@ -100,7 +102,7 @@ public class CommandConnectorBuilder implements Builder<CommandConnector> {
         rulePermissions,
         identifierInfo,
         playerOnlyCommands,
-        useDefaultParseError);
+        syntaxErrorFunction);
   }
 
   public CommandConnectorBuilder addRoot(CommandRoot root) {
@@ -141,7 +143,8 @@ public class CommandConnectorBuilder implements Builder<CommandConnector> {
     return this;
   }
 
-  public void setUseDefaultParseError(boolean use) {
-    this.useDefaultParseError = use;
+  public CommandConnectorBuilder setSyntaxErrorFunction(BiFunction<String, String, Component> syntaxErrorFunction) {
+    this.syntaxErrorFunction = syntaxErrorFunction;
+    return this;
   }
 }

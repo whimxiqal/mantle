@@ -75,6 +75,8 @@ package net.whimxiqal.mantle.common.connector;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.whimxiqal.mantle.common.CommandExecutor;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Lexer;
@@ -161,11 +163,15 @@ public interface CommandConnector {
    */
   IdentifierInfo<?> identifierInfo();
 
-  /**
-   * True if the default parse error should be used when parsing fails.
-   *
-   * @return if default parser error is used
-   */
-  boolean useDefaultParseError();
+  default Component syntaxError(String invalidInput, @Nullable String optionList) {
+    Component component = Component.text("Unexpected input: ")
+        .append(Component.text(invalidInput));
+    if (optionList != null) {
+      component = component.append(Component.text(". Expected <"))
+          .append(Component.text(optionList))
+          .append(Component.text(">"));
+    }
+    return component.color(NamedTextColor.RED);
+  }
 
 }

@@ -102,7 +102,7 @@ class PermissionListener implements ParseTreeListener {
 
   @Override
   public void enterEveryRule(ParserRuleContext ctx) {
-    evaluatePermission(ctx.getRuleIndex(), rulePermissions);
+    evaluatePermission(ctx.getRuleIndex());
   }
 
   @Override
@@ -114,8 +114,8 @@ class PermissionListener implements ParseTreeListener {
     return allowed;
   }
 
-  private void evaluatePermission(int index, Map<Integer, String> permissionMap) {
-    String permission = permissionMap.get(index);
+  private void evaluatePermission(int index) {
+    String permission = rulePermissions.get(index);
     if (permission != null && !source.hasPermission(permission)) {
       allowed = false;
     }

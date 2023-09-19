@@ -46,62 +46,81 @@
  * SOFTWARE.
  */
 
-package net.whimxiqal.mantle.common;
+package net.whimxiqal.mantle.sponge9;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.whimxiqal.mantle.common.CommandSource;
+import net.whimxiqal.mantle.common.MantleCommand;
 import net.whimxiqal.mantle.common.connector.CommandConnector;
-import org.antlr.v4.runtime.BaseErrorListener;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.Recognizer;
-import org.antlr.v4.runtime.Token;
+import net.whimxiqal.mantle.common.connector.CommandRoot;
+import org.spongepowered.api.Server;
+import org.spongepowered.api.command.Command;
+import org.spongepowered.api.command.CommandCause;
+import org.spongepowered.api.command.CommandCompletion;
+import org.spongepowered.api.command.CommandResult;
+import org.spongepowered.api.command.parameter.ArgumentReader;
+import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 
-class MantleErrorListener extends BaseErrorListener {
+final class Sponge9MantleCommand extends MantleCommand implements Command.Raw {
 
-  private final CommandConnector connector;
-  private final String command;
-  private Component errorMessage;
-
-  MantleErrorListener(CommandConnector connector, String command) {
-    this.connector = connector;
-    this.command = command;
+  public Sponge9MantleCommand(CommandConnector connector, CommandRoot root) {
+    super(connector, root);
   }
 
   @Override
-  public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line,
-                          int charPositionInLine, String msg, RecognitionException e) {
-    if (offendingSymbol == null || !(offendingSymbol instanceof Token) || e == null) {
-      this.errorMessage = connector.syntaxError(command.substring(charPositionInLine), null);
-      return;
-    }
-    List<String> options = e.getExpectedTokens().getIntervals()
-        .stream()
-        .flatMap(interval -> IntStream.range(interval.a, interval.b).boxed())
-        .map(recognizer.getVocabulary()::getLiteralName)
-        .map(literal -> literal.substring(1, literal.length() - 1))  // cut off single quotes
+  public CommandResult process(CommandCause cause, ArgumentReader.Mutable arguments) {
+    return convertResult(super.process(convertCause(cause), arguments.remaining()));
+  }
+
+  @Override
+  public List<CommandCompletion> complete(CommandCause cause, ArgumentReader.Mutable arguments) {
+    return complete(convertCause(cause), arguments.remaining()).stream()
+        .map(CommandCompletion::of)
         .collect(Collectors.toList());
-    String optionsString;
-    if (options.size() > 5) {
-      optionsString = String.join("|", options.subList(0, 5)) + " ...";
-    } else {
-      optionsString = String.join("|", options);
+  }
+
+  @Override
+  public boolean canExecute(CommandCause cause) {
+    return true;
+  }
+
+  @Override
+  public Optional<Component> shortDescription(CommandCause cause) {
+    return Optional.empty();
+  }
+
+  @Override
+  public Optional<Component> extendedDescription(CommandCause cause) {
+    return Optional.empty();
+  }
+
+  @Override
+  public Component usage(CommandCause cause) {
+    return Component.empty();
+  }
+
+  private CommandSource convertCause(CommandCause cause) {
+    if (cause.root() instanceof Server) {
+      return new CommandSource(CommandSource.Type.CONSOLE,
+          null,
+          (Server) cause.root());
+    } else if (cause.root() instanceof ServerPlayer) {
+      return new CommandSource(CommandSource.Type.PLAYER,
+          ((ServerPlayer) cause.root()).uniqueId(),
+          (ServerPlayer) cause.root());
     }
-    this.errorMessage = connector.syntaxError(command.substring(charPositionInLine), optionsString);
+    return CommandSource.unknown();
   }
 
-  public boolean hasError() {
-    return errorMessage != null;
-  }
-
-  public Component errorMessage() {
-    return errorMessage;
-  }
-
-  public void sendErrorMessage(CommandSource source) {
-    if (errorMessage != null) {
-      source.audience().sendMessage(errorMessage);
-    }
+  private CommandResult convertResult(net.whimxiqal.mantle.common.CommandResult result) {
+    return switch (result.type()) {
+      case SUCCESS -> CommandResult.success();
+      default -> CommandResult.error(result.message().orElse(Component.text("An error occurred")
+          .color(NamedTextColor.DARK_RED)));
+    };
   }
 }

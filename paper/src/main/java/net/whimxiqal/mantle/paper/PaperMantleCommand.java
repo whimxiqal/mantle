@@ -46,62 +46,68 @@
  * SOFTWARE.
  */
 
-package net.whimxiqal.mantle.common;
+package net.whimxiqal.mantle.paper;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import net.kyori.adventure.text.Component;
+import java.util.UUID;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.whimxiqal.mantle.common.CommandResult;
+import net.whimxiqal.mantle.common.CommandSource;
+import net.whimxiqal.mantle.common.MantleCommand;
 import net.whimxiqal.mantle.common.connector.CommandConnector;
-import org.antlr.v4.runtime.BaseErrorListener;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.Recognizer;
-import org.antlr.v4.runtime.Token;
+import net.whimxiqal.mantle.common.connector.CommandRoot;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
-class MantleErrorListener extends BaseErrorListener {
+final class PaperMantleCommand extends Command {
 
-  private final CommandConnector connector;
-  private final String command;
-  private Component errorMessage;
+  private final MantleCommand mantleCommand;
+  private final CommandRoot root;
+  private final LegacyComponentSerializer componentSerializer = LegacyComponentSerializer.legacyAmpersand();
 
-  MantleErrorListener(CommandConnector connector, String command) {
-    this.connector = connector;
-    this.command = command;
+  public PaperMantleCommand(CommandConnector connector, CommandRoot root) {
+    super(root.baseCommand());
+    this.mantleCommand = new MantleCommand(connector, root);
+    this.root = root;
+  }
+
+  public static CommandSource convertSender(CommandSender sender) {
+    if (sender instanceof Player) {
+      UUID uuid = ((Player) sender).getUniqueId();
+      return new CommandSource(CommandSource.Type.PLAYER, uuid, sender);
+    } else if (sender instanceof ConsoleCommandSender) {
+      return new CommandSource(CommandSource.Type.CONSOLE, null, sender);
+    }
+    return CommandSource.unknown();
   }
 
   @Override
-  public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line,
-                          int charPositionInLine, String msg, RecognitionException e) {
-    if (offendingSymbol == null || !(offendingSymbol instanceof Token) || e == null) {
-      this.errorMessage = connector.syntaxError(command.substring(charPositionInLine), null);
-      return;
-    }
-    List<String> options = e.getExpectedTokens().getIntervals()
-        .stream()
-        .flatMap(interval -> IntStream.range(interval.a, interval.b).boxed())
-        .map(recognizer.getVocabulary()::getLiteralName)
-        .map(literal -> literal.substring(1, literal.length() - 1))  // cut off single quotes
-        .collect(Collectors.toList());
-    String optionsString;
-    if (options.size() > 5) {
-      optionsString = String.join("|", options.subList(0, 5)) + " ...";
-    } else {
-      optionsString = String.join("|", options);
-    }
-    this.errorMessage = connector.syntaxError(command.substring(charPositionInLine), optionsString);
+  public @NotNull String getName() {
+    return root.baseCommand();
   }
 
-  public boolean hasError() {
-    return errorMessage != null;
+  @Override
+  public @NotNull String getDescription() {
+    return componentSerializer.serialize(root.description());
   }
 
-  public Component errorMessage() {
-    return errorMessage;
+  @Override
+  public boolean execute(CommandSender sender, String commandLabel, String[] args) {
+    return mantleCommand.process(convertSender(sender), String.join(" ", Arrays.asList(args))).type()
+        == CommandResult.Type.SUCCESS;
   }
 
-  public void sendErrorMessage(CommandSource source) {
-    if (errorMessage != null) {
-      source.audience().sendMessage(errorMessage);
-    }
+  @Override
+  public @NotNull List<String> tabComplete(CommandSender sender, String alias, String[] args) throws IllegalArgumentException {
+    return mantleCommand.complete(convertSender(sender), String.join(" ", Arrays.asList(args)));
   }
+
+  public MantleCommand getMantleCommand() {
+    return mantleCommand;
+  }
+
 }

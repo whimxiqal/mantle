@@ -137,8 +137,8 @@ public class IdentifierInfoBuilder<T extends ParserRuleContext> implements Build
   public IdentifierInfoBuilder<T> registerCompletion(int callerRule,
                                                      int identifierIndex,
                                                      String parameterName) {
-    completionTable.computeIfAbsent(identifierIndex, k -> new HashMap<>())
-        .put(callerRule, parameterName);
+    completionTable.computeIfAbsent(callerRule, k -> new HashMap<>())
+        .put(identifierIndex, parameterName);
     return this;
   }
 
