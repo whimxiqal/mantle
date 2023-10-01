@@ -25,11 +25,8 @@
 package net.whimxiqal.mantle.common.phase;
 
 import java.util.Optional;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.whimxiqal.mantle.common.CommandResult;
 import net.whimxiqal.mantle.common.CommandSource;
-import net.whimxiqal.mantle.common.IdentifierTracker;
 import net.whimxiqal.mantle.common.IdentifierTrackerImpl;
 import net.whimxiqal.mantle.common.connector.CommandConnector;
 import net.whimxiqal.mantle.common.parameter.Parameter;
@@ -41,13 +38,11 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
  */
 public class IdentifierParsePhase implements ParsePhase {
   private final CommandConnector connector;
-  private final IdentifierTrackerImpl tracker;
-  private final boolean validate;
+  private final IdentifierListener identifierListener;
 
   public IdentifierParsePhase(CommandConnector connector, IdentifierTrackerImpl tracker, boolean validate) {
     this.connector = connector;
-    this.tracker = tracker;
-    this.validate = validate;
+    this.identifierListener = new IdentifierListener(connector.identifierInfo(), tracker, validate);
   }
 
   @Override
@@ -56,7 +51,6 @@ public class IdentifierParsePhase implements ParsePhase {
     if (connector.identifierInfo() == null) {
       return Optional.empty();
     }
-    IdentifierListener identifierListener = new IdentifierListener(connector.identifierInfo(), tracker, validate);
     walker.walk(identifierListener, parseTree);
     Parameter invalid = identifierListener.getInvalid();
     if (invalid != null) {
@@ -65,4 +59,5 @@ public class IdentifierParsePhase implements ParsePhase {
     }
     return Optional.empty();
   }
+
 }

@@ -1,0 +1,90 @@
+plugins {
+    id 'java'
+}
+
+sourceCompatibility = JavaVersion.toVersion(17)
+targetCompatibility = JavaVersion.toVersion(17)
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'sponge'
+        url = 'https://repo.spongepowered.org/repository/maven-public/'
+    }
+}
+
+dependencies {
+    compileOnly project(':common')
+    compileOnly 'org.spongepowered:spongeapi:9.0.0'
+}
+
+if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword') && project.ext.publish) {
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+
+    publishing {
+        repositories {
+            maven {
+                name = "sonatype"
+                url = project.ext.snapshot
+                        ? "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                        : "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                credentials {
+                    username sonatypeUsername
+                    password sonatypePassword
+                }
+            }
+        }
+        publications {
+            mavenJava(MavenPublication) {
+                groupId = 'net.whimxiqal.mantle'
+                artifactId = 'sponge9'
+                version = project.ext.fullVersion
+                from components.java
+                versionMapping {
+                    usage('java-api') {
+                        fromResolutionOf('runtimeClasspath')
+                    }
+                    usage('java-runtime') {
+                        fromResolutionResult()
+                    }
+                }
+                pom {
+                    name = 'Mantle Sponge 9'
+                    description = 'A Minecraft Command Framwork on top of ANTLR4'
+                    url = 'https://github.com/whimxiqal/mantle'
+                    licenses {
+                        license {
+                            name = 'MIT'
+                            url = 'https://opensource.org/licenses/MIT'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'whimxiqal'
+                            name = 'whimxiqal'
+                            url = 'https://whimxiqal.net'
+                            email = 'whimxiqal@gmail.com'
+                        }
+                    }
+                    scm {
+                        connection = 'scm:git:git://github.com/whimxiqal/mantle.git'
+                        developerConnection = 'scm:git:ssh://github.com:whimxiqal/mantle.git'
+                        url = 'https://github.com/whimxiqal/mantle'
+                    }
+                    issueManagement {
+                        system = 'GitHub'
+                        url = 'https://github.com/whimxiqal/mantle/issues'
+                    }
+                }
+            }
+        }
+
+        signing {
+            useGpgCmd()
+            sign configurations.archives
+            sign publishing.publications.mavenJava
+            required = true
+        }
+    }
+}

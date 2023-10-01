@@ -4,20 +4,6 @@ plugins {
 
 defaultTasks 'licenseFormat', 'build'
 
-def determinePatchVersion() {
-    // get the name of the last tag
-    def tagInfo = new ByteArrayOutputStream()
-    exec {
-        commandLine 'git', 'describe', '--tags'
-        standardOutput = tagInfo
-    }
-    tagInfo = tagInfo.toString()
-    if (!tagInfo.contains('-')) {
-        return 0
-    }
-    return tagInfo.split("-")[1]
-}
-
 subprojects {
     apply plugin: 'java'
     apply plugin: 'java-library'
@@ -26,14 +12,11 @@ subprojects {
     project.ext.publish = false
     project.ext.snapshot = true
     project.ext.majorVersion = '0'
-    project.ext.minorVersion = '0'
-    project.ext.patchVersion = '1' //determinePatchVersion()
-    project.ext.apiVersion = project.ext.majorVersion + '.' + project.ext.minorVersion
-    project.ext.fullVersion = project.ext.apiVersion + '.' + project.ext.patchVersion + (project.ext.snapshot ? "-SNAPSHOT" : "")
+    project.ext.minorVersion = '1'
+    project.ext.patchVersion = '0'
+    project.ext.fullVersion = project.ext.majorVersion + '.'+ project.ext.minorVersion + '.' + project.ext.patchVersion + (project.ext.snapshot ? "-SNAPSHOT" : "")
     version = project.ext.fullVersion
-
-    sourceCompatibility = JavaVersion.toVersion(8)
-    targetCompatibility = JavaVersion.toVersion(8)
+    group = 'net.whimxiqal.mantle'
 
     tasks.withType(JavaCompile).configureEach {
         options.encoding = 'UTF-8'

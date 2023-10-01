@@ -89,9 +89,8 @@ public class IdentifierListener implements ParseTreeListener {
 
   @Override
   public void exitEveryRule(ParserRuleContext ctx) {
-    boolean isIdentifier = ctx.getRuleIndex() == info.identifierRule();
     ruleStack.pop();
-    if (isIdentifier) {
+    if (ctx.getRuleIndex() == info.identifierRule()) {
       // we just left the identifier, so this rule is now potentially on it's next identifier
       ruleStack.peek().count++;
     }

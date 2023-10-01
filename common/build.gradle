@@ -2,6 +2,9 @@ plugins {
     id 'antlr'
 }
 
+sourceCompatibility = JavaVersion.toVersion(8)
+targetCompatibility = JavaVersion.toVersion(8)
+
 dependencies {
 
     // https://mvnrepository.com/artifact/org.antlr/antlr
@@ -43,47 +46,45 @@ if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePass
             }
         }
         publications {
-            shadow(MavenPublication) { publication ->
-                {
-                    groupId = 'net.whimxiqal.mantle'
-                    artifactId = 'common'
-                    project.shadow.component(publication)
-                    version = project.ext.fullVersion
-                    versionMapping {
-                        usage('java-api') {
-                            fromResolutionOf('runtimeClasspath')
-                        }
-                        usage('java-runtime') {
-                            fromResolutionResult()
+            mavenJava(MavenPublication) {
+                groupId = 'net.whimxiqal.mantle'
+                artifactId = 'common'
+                version = project.ext.fullVersion
+                from components.java
+                versionMapping {
+                    usage('java-api') {
+                        fromResolutionOf('runtimeClasspath')
+                    }
+                    usage('java-runtime') {
+                        fromResolutionResult()
+                    }
+                }
+                pom {
+                    name = 'Mantle Common'
+                    description = 'A Minecraft Command Framwork on top of ANTLR4'
+                    url = 'https://github.com/whimxiqal/mantle'
+                    licenses {
+                        license {
+                            name = 'MIT'
+                            url = 'https://opensource.org/licenses/MIT'
                         }
                     }
-                    pom {
-                        name = 'Mantle Common'
-                        description = 'A Minecraft Command Framwork on top of ANTLR4'
+                    developers {
+                        developer {
+                            id = 'whimxiqal'
+                            name = 'whimxiqal'
+                            url = 'https://whimxiqal.net'
+                            email = 'whimxiqal@gmail.com'
+                        }
+                    }
+                    scm {
+                        connection = 'scm:git:git://github.com/whimxiqal/mantle.git'
+                        developerConnection = 'scm:git:ssh://github.com:whimxiqal/mantle.git'
                         url = 'https://github.com/whimxiqal/mantle'
-                        licenses {
-                            license {
-                                name = 'MIT'
-                                url = 'https://opensource.org/licenses/MIT'
-                            }
-                        }
-                        developers {
-                            developer {
-                                id = 'whimxiqal'
-                                name = 'whimxiqal'
-                                url = 'https://whimxiqal.net'
-                                email = 'whimxiqal@gmail.com'
-                            }
-                        }
-                        scm {
-                            connection = 'scm:git:git://github.com/whimxiqal/mantle.git'
-                            developerConnection = 'scm:git:ssh://github.com:whimxiqal/mantle.git'
-                            url = 'https://github.com/whimxiqal/mantle'
-                        }
-                        issueManagement {
-                            system = 'GitHub'
-                            url = 'https://github.com/whimxiqal/mantle/issues'
-                        }
+                    }
+                    issueManagement {
+                        system = 'GitHub'
+                        url = 'https://github.com/whimxiqal/mantle/issues'
                     }
                 }
             }
@@ -92,7 +93,7 @@ if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePass
         signing {
             useGpgCmd()
             sign configurations.archives
-            sign publishing.publications.shadow
+            sign publishing.publications.mavenJava
             required = true
         }
     }

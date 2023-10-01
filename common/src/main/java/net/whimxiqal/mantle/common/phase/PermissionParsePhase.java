@@ -41,9 +41,11 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 public class PermissionParsePhase implements ParsePhase {
 
   private final CommandConnector connector;
+  private final boolean execute;
 
-  public PermissionParsePhase(CommandConnector connector) {
+  public PermissionParsePhase(CommandConnector connector, boolean execute) {
     this.connector = connector;
+    this.execute = execute;
   }
 
   @Override
@@ -56,8 +58,11 @@ public class PermissionParsePhase implements ParsePhase {
     ParseTreeWalker walker = new ParseTreeWalker();
     walker.walk(permissionListener, parseTree);
     if (!permissionListener.isAllowed()) {
-      source.audience().sendMessage(Component.text("You do not have permission to do that")
-          .color(NamedTextColor.DARK_RED));
+      if (execute) {
+        // Send a message if they are executing the command
+        source.audience().sendMessage(Component.text("You do not have permission to do that")
+            .color(NamedTextColor.DARK_RED));
+      }
       return Optional.of(CommandResult.failure());
     }
     return Optional.empty();

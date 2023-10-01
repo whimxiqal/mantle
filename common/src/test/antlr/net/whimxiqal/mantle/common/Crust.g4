@@ -4,12 +4,13 @@ grammar Crust;
 crust: CRUST (register | unregister | player | age);
 core: CORE identifier;  // just tests autocompletion for this specific case
 
-register: REGISTER identifier identifier?;
-unregister: UNREGISTER identifier;
-player: PLAYER identifier (playerInfo | playerEdit);
+register: REGISTER name=identifier (color=identifier (identifier (identifier person=identifier?)?)?)?;
+unregister: UNREGISTER name=identifier;
+player: PLAYER name=identifier (playerInfo | playerEdit);
 playerInfo: INFO;
-playerEdit: EDIT (playerEditNickname);
+playerEdit: EDIT (playerEditNickname | playerEditColor);
 playerEditNickname: NICKNAME identifier;
+playerEditColor: COLOR identifier;
 
 age: AGE identifier;  // tests integer parameter
 
@@ -22,6 +23,7 @@ PLAYER: 'player';
 INFO: 'info';
 EDIT: 'edit';
 NICKNAME: 'nickname';
+COLOR: 'color';
 AGE: 'age';
 
 // MANTLE NODES
@@ -35,10 +37,9 @@ ident: ID
         | INFO
         | EDIT
         | NICKNAME
+        | COLOR
         | AGE;
-ID: [a-zA-Z0-9\-_&]+;
-ID_SET: ID (COMMA ID)+;
-COMMA: ',';
+ID: [a-zA-Z0-9\-_&.{}]+;
 SINGLE_QUOTE: '\'';
 DOUBLE_QUOTE: '"';
 WS : [ \t\r\n]+ -> channel(HIDDEN); // skip spaces, tabs, newlines
