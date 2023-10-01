@@ -31,7 +31,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 import net.kyori.adventure.text.Component;
 import net.whimxiqal.mantle.common.CommandExecutor;
 import net.whimxiqal.mantle.common.Mantle;
@@ -51,7 +51,7 @@ class CommandConnectorImpl implements CommandConnector {
   private final Map<Integer, String> rulePermissions;
   private final IdentifierInfo<?> identifierInfo;
   private final Set<Integer> playerOnlyCommands;
-  private final BiFunction<String, String, Component> syntaxErrorFunction;
+  private final Function<String, Component> syntaxErrorFunction;
 
   CommandConnectorImpl(Collection<CommandRoot> roots,
                        Class<? extends Lexer> lexerClass,
@@ -60,7 +60,7 @@ class CommandConnectorImpl implements CommandConnector {
                        Map<Integer, String> rulePermissions,
                        IdentifierInfo<?> identifierInfo,
                        Set<Integer> playerOnlyCommands,
-                       @Nullable BiFunction<String, String, Component> syntaxErrorFunction) {
+                       @Nullable Function<String, Component> syntaxErrorFunction) {
     this.roots = Collections.unmodifiableCollection(roots);
     this.lexerClass = lexerClass;
     this.parserClass = parserClass;
@@ -195,10 +195,10 @@ class CommandConnectorImpl implements CommandConnector {
   }
 
   @Override
-  public Component syntaxError(String invalidInput, String optionList) {
+  public Component syntaxError(String invalidInput) {
     if (syntaxErrorFunction == null) {
-      return CommandConnector.super.syntaxError(invalidInput, optionList);
+      return CommandConnector.super.syntaxError(invalidInput);
     }
-    return syntaxErrorFunction.apply(invalidInput, optionList);
+    return syntaxErrorFunction.apply(invalidInput);
   }
 }

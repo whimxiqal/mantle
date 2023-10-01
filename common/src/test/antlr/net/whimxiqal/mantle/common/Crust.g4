@@ -40,8 +40,6 @@ ident: ID
         | COLOR
         | AGE;
 ID: [a-zA-Z0-9\-_&.{}]+;
-ID_SET: ID (COMMA ID)+;
-COMMA: ',';
 SINGLE_QUOTE: '\'';
 DOUBLE_QUOTE: '"';
 WS : [ \t\r\n]+ -> channel(HIDDEN); // skip spaces, tabs, newlines

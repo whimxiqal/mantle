@@ -35,7 +35,6 @@ import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.TokenStream;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * A connector with which you may link your ANTLR implementation files
@@ -119,19 +118,14 @@ public interface CommandConnector {
    * Generate a message that describes a syntax error, given some information about the input.
    *
    * @param invalidInput the word or phrase that was invalid
-   * @param optionList   the readable list of options that could replace the invalid input,
-   *                     or null if there are no options
    * @return the message
    */
-  default Component syntaxError(String invalidInput, @Nullable String optionList) {
-    Component component = Component.text("Unexpected input: ")
-        .append(Component.text(invalidInput));
-    if (optionList != null) {
-      component = component.append(Component.text(". Expected <"))
-          .append(Component.text(optionList))
-          .append(Component.text(">"));
+  default Component syntaxError(String invalidInput) {
+    if (invalidInput.isEmpty()) {
+      return Component.text("Command incomplete").color(NamedTextColor.RED);
+    } else {
+      return Component.text("Unexpected input: \"" + invalidInput + "\". ").color(NamedTextColor.RED);
     }
-    return component.color(NamedTextColor.RED);
   }
 
 }

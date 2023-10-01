@@ -31,7 +31,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 import net.kyori.adventure.text.Component;
 import net.whimxiqal.mantle.common.Builder;
 import net.whimxiqal.mantle.common.CommandExecutor;
@@ -50,7 +50,7 @@ public class CommandConnectorBuilder implements Builder<CommandConnector> {
   private Class<? extends Parser> parserClass;
   private CommandExecutor executor;
   private IdentifierInfo<?> identifierInfo;
-  private BiFunction<String, String, Component> syntaxErrorFunction;
+  private Function<String, Component> syntaxErrorFunction;
 
   /**
    * Build {@link CommandConnector}.
@@ -119,7 +119,7 @@ public class CommandConnectorBuilder implements Builder<CommandConnector> {
     return this;
   }
 
-  public CommandConnectorBuilder setSyntaxErrorFunction(BiFunction<String, String, Component> syntaxErrorFunction) {
+  public CommandConnectorBuilder setSyntaxErrorFunction(Function<String, Component> syntaxErrorFunction) {
     this.syntaxErrorFunction = syntaxErrorFunction;
     return this;
   }

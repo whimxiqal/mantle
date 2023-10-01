@@ -267,6 +267,9 @@ public class MantleTest {
     assertSuccess(instance().executeCommand(source, "crust register zeus"));
     Assertions.assertEquals(2, players.size());
     Assertions.assertTrue(players.contains("zeus"));
+
+    // needs another parameter
+    assertFailure(instance().executeCommand(source, "crust register"));
   }
 
   @Test
