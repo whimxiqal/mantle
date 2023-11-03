@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.whimxiqal.mantle.common.CommandSource;
-import net.whimxiqal.mantle.common.Mantle;
 import net.whimxiqal.mantle.common.MantleCommand;
 import net.whimxiqal.mantle.common.connector.CommandConnector;
 import net.whimxiqal.mantle.common.connector.CommandRoot;
