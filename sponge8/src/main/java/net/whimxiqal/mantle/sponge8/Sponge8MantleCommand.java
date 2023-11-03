@@ -33,6 +33,7 @@ import net.whimxiqal.mantle.common.CommandSource;
 import net.whimxiqal.mantle.common.MantleCommand;
 import net.whimxiqal.mantle.common.connector.CommandConnector;
 import net.whimxiqal.mantle.common.connector.CommandRoot;
+import org.spongepowered.api.Game;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.command.Command;
 import org.spongepowered.api.command.CommandCause;
@@ -80,14 +81,14 @@ final class Sponge8MantleCommand extends MantleCommand implements Command.Raw {
   }
 
   private CommandSource convertCause(CommandCause cause) {
-    if (cause.root() instanceof Server) {
+    if (cause.root() instanceof Game) {
       return new CommandSource(CommandSource.Type.CONSOLE,
           null,
-          (Server) cause.root());
+          cause.audience());
     } else if (cause.root() instanceof ServerPlayer) {
       return new CommandSource(CommandSource.Type.PLAYER,
           ((ServerPlayer) cause.root()).uniqueId(),
-          (ServerPlayer) cause.root());
+          cause.audience());
     }
     return CommandSource.unknown();
   }
