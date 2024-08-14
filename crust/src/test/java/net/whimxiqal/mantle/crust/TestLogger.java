@@ -22,20 +22,13 @@
  * SOFTWARE.
  */
 
-package net.whimxiqal.mantle.paper;
+package net.whimxiqal.mantle.crust;
 
 import net.whimxiqal.mantle.common.Logger;
 
-class PaperLogger implements Logger {
-
-  java.util.logging.Logger base;
-
-  PaperLogger(java.util.logging.Logger base) {
-    this.base = base;
-  }
-
+public class TestLogger implements Logger {
   @Override
   public void error(String message) {
-    base.severe(message);
+    System.out.println("ERROR: " + message);
   }
 }

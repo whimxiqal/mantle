@@ -22,32 +22,18 @@
  * SOFTWARE.
  */
 
-package net.whimxiqal.mantle.common;
+package net.whimxiqal.mantle.paper;
 
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.audience.MessageType;
-import net.kyori.adventure.identity.Identity;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import org.jetbrains.annotations.NotNull;
+import net.whimxiqal.mantle.common.CommandContext;
+import net.whimxiqal.mantle.common.CommandResult;
+import net.whimxiqal.mantle.crust.CrustBaseVisitor;
 
-public class TestAudience implements Audience {
+@SuppressWarnings("unused")  // until visitor is used in tests
+public class PaperCrustVisitor extends CrustBaseVisitor<CommandResult> {
 
-  boolean sentMessage = false;
+  CommandContext context;
 
-  @Override
-  public void sendMessage(final @NotNull Identity source,
-                          final @NotNull Component message,
-                          final @NotNull MessageType type) {
-    sentMessage = true;
-
-    PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
-    String stringMessage = serializer.serialize(message);
-    System.out.println(stringMessage);
+  public PaperCrustVisitor(CommandContext context) {
+    this.context = context;
   }
-
-  public boolean hasSentMessage() {
-    return sentMessage;
-  }
-
 }

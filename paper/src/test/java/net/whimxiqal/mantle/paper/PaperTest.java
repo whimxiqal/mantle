@@ -24,18 +24,36 @@
 
 package net.whimxiqal.mantle.paper;
 
-import net.whimxiqal.mantle.common.Logger;
+import be.seeseemelk.mockbukkit.MockBukkit;
+import be.seeseemelk.mockbukkit.MockPlugin;
+import be.seeseemelk.mockbukkit.ServerMock;
+import be.seeseemelk.mockbukkit.entity.PlayerMock;
+import net.whimxiqal.mantle.common.CommandRegistrar;
+import net.whimxiqal.mantle.crust.CrustConnector;
+import org.bukkit.command.Command;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-class PaperLogger implements Logger {
+public class PaperTest {
 
-  java.util.logging.Logger base;
+//  @Disabled("Disabled until MockBucket implements")
+  @Test
+  void testPaper() {
+    ServerMock server = MockBukkit.mock();
+    MockPlugin plugin = MockBukkit.createMockPlugin();
 
-  PaperLogger(java.util.logging.Logger base) {
-    this.base = base;
+    CommandRegistrar registrar = PaperRegistrarProvider.get(plugin);
+    registrar.register(CrustConnector.generate(PaperCrustVisitor::new));
+
+    PlayerMock player = server.addPlayer();
+
+    Command command = plugin.getCommand("crust");
+    Assertions.assertNotNull(command);
+
+    boolean res = plugin.onCommand(player, command, "crust", new String[]{});
+    Assertions.assertTrue(res);
+
+    MockBukkit.unmock();
   }
 
-  @Override
-  public void error(String message) {
-    base.severe(message);
-  }
 }

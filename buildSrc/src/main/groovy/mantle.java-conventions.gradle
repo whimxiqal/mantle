@@ -1,0 +1,51 @@
+plugins {
+    id 'java'
+    id 'java-library'
+    id 'org.cadixdev.licenser'
+}
+
+project.ext.publish = true
+project.ext.snapshot = true
+project.ext.majorVersion = '0'
+project.ext.minorVersion = '2'
+project.ext.patchVersion = '0'
+project.ext.fullVersion = project.ext.majorVersion + '.'+ project.ext.minorVersion + '.' + project.ext.patchVersion + (project.ext.snapshot ? "-SNAPSHOT" : "")
+version = project.ext.fullVersion
+group = 'net.whimxiqal.mantle'
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+jar {
+    from '../LICENSE.txt'
+}
+
+license {
+    header = rootProject.file('LICENSE.txt')
+    include '**/*.java'
+    newLine = true
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.3'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.3'
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+javadoc {
+    options.encoding = 'UTF-8'
+    options.charSet = 'UTF-8'
+    options.links(
+            'https://javadoc.io/doc/org.jetbrains/annotations/23.0.0'
+    )
+    options.addStringOption('Xdoclint:none', '-quiet')
+}

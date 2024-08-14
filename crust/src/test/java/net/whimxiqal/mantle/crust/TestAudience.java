@@ -22,43 +22,32 @@
  * SOFTWARE.
  */
 
-package net.whimxiqal.mantle.common;
+package net.whimxiqal.mantle.crust;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.audience.MessageType;
+import net.kyori.adventure.identity.Identity;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.jetbrains.annotations.NotNull;
 
-public class CrustPlatformProxy implements Proxy {
+public class TestAudience implements Audience {
 
-  @Override
-  public Logger logger() {
-    return new TestLogger();
-  }
-
-  @Override
-  public boolean hasPermission(UUID playerUuid, String permission) {
-    return !CrustPlugin.instance.playerRestrictedPermissions.containsKey(playerUuid) ||
-        !CrustPlugin.instance.playerRestrictedPermissions.get(playerUuid).contains(permission);
-  }
+  boolean sentMessage = false;
 
   @Override
-  public List<String> onlinePlayerNames() {
-    return new LinkedList<>(CrustPlugin.instance.players);
+  public void sendMessage(final @NotNull Identity source,
+                          final @NotNull Component message,
+                          final @NotNull MessageType type) {
+    sentMessage = true;
+
+    PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
+    String stringMessage = serializer.serialize(message);
+    System.out.println(stringMessage);
   }
 
-  @Override
-  public boolean isOnlinePlayer(String candidate) {
-    return CrustPlugin.instance.players.contains(candidate);
+  public boolean hasSentMessage() {
+    return sentMessage;
   }
 
-  @Override
-  public List<String> worldNames() {
-    return Collections.emptyList();
-  }
-
-  @Override
-  public boolean isWorldName(String candidate) {
-    return false;
-  }
 }

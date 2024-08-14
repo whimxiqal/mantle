@@ -1,34 +1,31 @@
 plugins {
-    id 'antlr'
+    id 'mantle.java-conventions'
+//    id 'antlr'
 }
 
-sourceCompatibility = JavaVersion.toVersion(8)
-targetCompatibility = JavaVersion.toVersion(8)
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(8))
+}
 
 dependencies {
 
     // https://mvnrepository.com/artifact/org.antlr/antlr
-    antlr 'org.antlr:antlr4:4.9.3'
+    implementation 'org.antlr:antlr4:4.9.3'
 
     // https://mvnrepository.com/artifact/net.kyori/adventure-api
-    implementation 'net.kyori:adventure-api:4.11.0'
-    implementation 'net.kyori:adventure-text-serializer-plain:4.11.0'
+    api 'net.kyori:adventure-api:4.11.0'
+    api 'net.kyori:adventure-text-serializer-plain:4.11.0'
 
     // https://mvnrepository.com/artifact/com.vmware.antlr4-c3/antlr4-c3
     // Internally used for command completion
     implementation 'com.vmware.antlr4-c3:antlr4-c3:1.1'
-
 }
 
 test {
     useJUnitPlatform()
 }
 
-generateTestGrammarSource {
-    arguments += ["-visitor", "-lib", "src/test/antlr/net/whimxiqal/mantle/common", "-package", "net.whimxiqal.mantle.common"]
-}
-
-if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword') && project.ext.publish) {
+if (project.hasProperty('ossrhToken') && project.hasProperty('ossrhTokenPassword') && project.ext.publish) {
     apply plugin: 'maven-publish'
     apply plugin: 'signing'
 
@@ -40,8 +37,8 @@ if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePass
                         ? "https://s01.oss.sonatype.org/content/repositories/snapshots/"
                         : "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
                 credentials {
-                    username sonatypeUsername
-                    password sonatypePassword
+                    username findProperty("ossrhToken") as String
+                    password findProperty("ossrhTokenPassword") as String
                 }
             }
         }

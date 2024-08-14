@@ -1,10 +1,12 @@
 plugins {
     id 'java'
     id 'java-library'
+    id 'mantle.java-conventions'
 }
 
-sourceCompatibility = JavaVersion.toVersion(8)
-targetCompatibility = JavaVersion.toVersion(8)
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(8))
+}
 
 repositories {
     maven {
@@ -20,7 +22,7 @@ dependencies {
     implementation 'net.kyori:adventure-text-serializer-legacy:4.11.0'
 }
 
-if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword') && project.ext.publish) {
+if (project.hasProperty('ossrhToken') && project.hasProperty('ossrhTokenPassword') && project.ext.publish) {
     apply plugin: 'maven-publish'
     apply plugin: 'signing'
 
@@ -32,8 +34,8 @@ if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePass
                         ? "https://s01.oss.sonatype.org/content/repositories/snapshots/"
                         : "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
                 credentials {
-                    username sonatypeUsername
-                    password sonatypePassword
+                    username findProperty("ossrhToken") as String
+                    password findProperty("ossrhTokenPassword") as String
                 }
             }
         }

@@ -43,7 +43,7 @@ public final class PaperRegistrarProvider {
    * @return a registrar with which to register commands
    */
   public static CommandRegistrar get(JavaPlugin plugin) {
-    PaperProxy proxy = new PaperProxy();
+    PaperProxy proxy = new PaperProxy(plugin);
     Mantle.setProxy(proxy);
     return new PaperCommandRegistrar(plugin);
   }
