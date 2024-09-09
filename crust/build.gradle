@@ -18,6 +18,10 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.3'
 }
 
+test {
+    useJUnitPlatform()
+}
+
 generateGrammarSource {
     arguments += ["-visitor", "-lib", "src/main/antlr/net/whimxiqal/mantle/crust", "-package", "net.whimxiqal.mantle.crust"]
 }

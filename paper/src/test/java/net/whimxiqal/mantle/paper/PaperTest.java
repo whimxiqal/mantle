@@ -32,11 +32,12 @@ import net.whimxiqal.mantle.common.CommandRegistrar;
 import net.whimxiqal.mantle.crust.CrustConnector;
 import org.bukkit.command.Command;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class PaperTest {
 
-//  @Disabled("Disabled until MockBucket implements")
+  @Disabled("Disabled until MockBucket implements")
   @Test
   void testPaper() {
     ServerMock server = MockBukkit.mock();
