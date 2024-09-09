@@ -2,9 +2,10 @@ plugins {
     id 'java'
     id 'java-library'
     id 'org.cadixdev.licenser'
+    id 'checkstyle'
 }
 
-project.ext.publish = true
+project.ext.publish = false
 project.ext.snapshot = true
 project.ext.majorVersion = '0'
 project.ext.minorVersion = '2'
@@ -48,4 +49,9 @@ javadoc {
             'https://javadoc.io/doc/org.jetbrains/annotations/23.0.0'
     )
     options.addStringOption('Xdoclint:none', '-quiet')
+}
+
+checkstyle {
+    ignoreFailures = false
+    maxWarnings = 0
 }

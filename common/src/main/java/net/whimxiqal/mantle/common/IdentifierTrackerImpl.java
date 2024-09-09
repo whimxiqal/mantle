@@ -59,6 +59,16 @@ public class IdentifierTrackerImpl implements IdentifierTracker {
     return getAll(parameter).get(index);
   }
 
+  /**
+   * Add an identifier for a given parameter during processing of a command.
+   *
+   * @param parameter  the parameter
+   * @param identifier the identifier
+   */
+  public void add(String parameter, String identifier) {
+    identifierList.add(new Identifier(parameter, identifier));
+  }
+
   private static class Identifier {
     String parameter;
     String identifier;
@@ -67,10 +77,6 @@ public class IdentifierTrackerImpl implements IdentifierTracker {
       this.parameter = parameter;
       this.identifier = identifier;
     }
-  }
-
-  public void add(String parameter, String identifier) {
-    identifierList.add(new Identifier(parameter, identifier));
   }
 
 }

@@ -27,21 +27,58 @@ package net.whimxiqal.mantle.common;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import org.jetbrains.annotations.ApiStatus;
 
 /**
  * An object to store platform-specific information.
  */
+@ApiStatus.Internal
 public interface Proxy {
 
+  /**
+   * The logger to log messages.
+   *
+   * @return the logger
+   */
   Logger logger();
 
+  /**
+   * True if a player has permission.
+   *
+   * @param playerUuid the uuid of the player
+   * @param permission the permission
+   * @return true if they have permission
+   * @throws NoSuchElementException if player doesn't exist
+   */
   boolean hasPermission(UUID playerUuid, String permission) throws NoSuchElementException;
 
+  /**
+   * List all online players.
+   *
+   * @return online players
+   */
   List<String> onlinePlayerNames();
 
+  /**
+   * True if the given name is that of an online player.
+   *
+   * @param candidate the name
+   * @return true if they are online
+   */
   boolean isOnlinePlayer(String candidate);
 
+  /**
+   * List all world names.
+   *
+   * @return the names
+   */
   List<String> worldNames();
 
+  /**
+   * True if a given name is a valid world.
+   *
+   * @param candidate the name
+   * @return true if it is a world
+   */
   boolean isWorldName(String candidate);
 }

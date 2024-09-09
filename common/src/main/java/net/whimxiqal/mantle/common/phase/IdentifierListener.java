@@ -36,7 +36,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 /**
  * A parse tree listener for finding identifiers.
  */
-public class IdentifierListener implements ParseTreeListener {
+class IdentifierListener implements ParseTreeListener {
 
   private final IdentifierInfo<?> info;
   private final IdentifierTrackerImpl tracker;

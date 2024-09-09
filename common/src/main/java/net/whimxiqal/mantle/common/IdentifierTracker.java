@@ -31,12 +31,38 @@ import java.util.List;
  */
 public interface IdentifierTracker {
 
+  /**
+   * Get all identifiers.
+   *
+   * @return the identifiers
+   */
   List<String> getAll();
 
+  /**
+   * Get all identifiers for a given parameter.
+   *
+   * @param parameter the parameter
+   * @return the identifiers
+   */
   List<String> getAll(String parameter);
 
+  /**
+   * Get an identifier at a specific index.
+   *
+   * @param index the index
+   * @return the identifier
+   * @throws IndexOutOfBoundsException if out of bounds
+   */
   String get(int index) throws IndexOutOfBoundsException;
 
+  /**
+   * Get an identifier at a specific index for a specific parameter.
+   *
+   * @param parameter the parameter
+   * @param index     the index
+   * @return the identifier
+   * @throws IndexOutOfBoundsException if out of bounds
+   */
   String get(String parameter, int index) throws IndexOutOfBoundsException;
 
 }

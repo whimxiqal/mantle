@@ -34,10 +34,20 @@ public final class Mantle {
   private Mantle() {
   }
 
+  /**
+   * Get the proxy. Internal use only.
+   *
+   * @return the proxy
+   */
   public static Proxy getProxy() {
     return proxy;
   }
 
+  /**
+   * Set the Proxy. Internal use only.
+   *
+   * @param proxy the proxy
+   */
   public static void setProxy(Proxy proxy) {
     Mantle.proxy = proxy;
   }

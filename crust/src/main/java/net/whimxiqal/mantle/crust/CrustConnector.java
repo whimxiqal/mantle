@@ -1,6 +1,7 @@
 package net.whimxiqal.mantle.crust;
 
 import java.util.Arrays;
+import net.kyori.adventure.text.Component;
 import net.whimxiqal.mantle.common.CommandExecutor;
 import net.whimxiqal.mantle.common.connector.CommandConnector;
 import net.whimxiqal.mantle.common.connector.CommandRoot;
@@ -18,8 +19,14 @@ public class CrustConnector {
 
   static public CommandConnector generate(CommandExecutor executor) {
     return CommandConnector.builder()
-        .addRoot(CommandRoot.builder("crust").build())
-        .addRoot(CommandRoot.builder("core").build())
+        .addRoot(CommandRoot.builder("crust")
+            .description(Component.text("Crust Command"))
+            .addAlias("cr")
+            .build())
+        .addRoot(CommandRoot.builder("core")
+            .description(Component.text("Core Command"))
+            .addAlias("co")
+            .build())
         .lexer(CrustLexer.class)
         .parser(CrustParser.class)
         .executor(executor)
@@ -44,6 +51,7 @@ public class CrustConnector {
             .addIgnoredCompletionToken(CrustLexer.DOUBLE_QUOTE)
             .build())
         .playerOnlyCommands(RULE_age)
+        .setSyntaxErrorFunction(err -> Component.text("Oops!! " + err))
         .build();
   }
 
