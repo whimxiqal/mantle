@@ -49,7 +49,7 @@ if (project.hasProperty('ossrhToken') && project.hasProperty('ossrhTokenPassword
                 }
                 pom {
                     name = 'Mantle Sponge 7'
-                    description = 'A Minecraft Command Framwork on top of ANTLR4'
+                    description = 'A Minecraft Command Framework using ANTLR4'
                     url = 'https://github.com/whimxiqal/mantle'
                     licenses {
                         license {
