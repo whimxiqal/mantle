@@ -1,7 +1,6 @@
 # Mantle
 
 ![Test and Build](https://github.com/whimxiqal/mantle/actions/workflows/build.yml/badge.svg)
-[![Checkstyle](https://github.com/whimxiqal/mantle/actions/workflows/checkstyle.yml/badge.svg)](https://checkstyle.org/)
 ![License](https://img.shields.io/github/license/whimxiqal/mantle)
 ![Maven Central](https://img.shields.io/maven-central/v/net.whimxiqal.mantle/common?color=green)
 
