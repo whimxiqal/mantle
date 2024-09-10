@@ -5,11 +5,11 @@ plugins {
     id 'checkstyle'
 }
 
-project.ext.publish = false
-project.ext.snapshot = true
+project.ext.publish = true
+project.ext.snapshot = false
 project.ext.majorVersion = '0'
-project.ext.minorVersion = '1'
-project.ext.patchVersion = '2'
+project.ext.minorVersion = '2'
+project.ext.patchVersion = '0'
 project.ext.fullVersion = project.ext.majorVersion + '.'+ project.ext.minorVersion + '.' + project.ext.patchVersion + (project.ext.snapshot ? "-SNAPSHOT" : "")
 version = project.ext.fullVersion
 group = 'net.whimxiqal.mantle'

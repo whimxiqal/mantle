@@ -59,7 +59,7 @@ final class PaperMantleCommand implements BasicCommand {
 
   @Override
   public void execute(@NotNull CommandSourceStack commandSourceStack, @NotNull String[] args) {
-    mantleCommand.process(convertSender(commandSourceStack.getSender()), String.join(" ", Arrays.asList(args))).type();
+    mantleCommand.process(convertSender(commandSourceStack.getSender()), String.join(" ", Arrays.asList(args)));
   }
 
   @Override
