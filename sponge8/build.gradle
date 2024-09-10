@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'mantle.java-conventions'
 }
 
 dependencies {
@@ -7,7 +8,7 @@ dependencies {
     compileOnly 'org.spongepowered:spongeapi:8.0.0'
 }
 
-if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword') && project.ext.publish) {
+if (project.hasProperty('ossrhToken') && project.hasProperty('ossrhTokenPassword') && project.ext.publish) {
     apply plugin: 'maven-publish'
     apply plugin: 'signing'
 
@@ -19,8 +20,8 @@ if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePass
                         ? "https://s01.oss.sonatype.org/content/repositories/snapshots/"
                         : "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
                 credentials {
-                    username sonatypeUsername
-                    password sonatypePassword
+                    username findProperty("ossrhToken") as String
+                    password findProperty("ossrhTokenPassword") as String
                 }
             }
         }
@@ -40,7 +41,7 @@ if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePass
                 }
                 pom {
                     name = 'Mantle Sponge 8'
-                    description = 'A Minecraft Command Framwork on top of ANTLR4'
+                    description = 'A Minecraft Command Framework using ANTLR4'
                     url = 'https://github.com/whimxiqal/mantle'
                     licenses {
                         license {

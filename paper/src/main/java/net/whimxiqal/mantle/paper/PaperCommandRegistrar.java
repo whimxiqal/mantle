@@ -24,63 +24,39 @@
 
 package net.whimxiqal.mantle.paper;
 
-import java.lang.reflect.Field;
-import java.util.Locale;
+import io.papermc.paper.command.brigadier.Commands;
+import io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager;
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.whimxiqal.mantle.common.CommandRegistrar;
 import net.whimxiqal.mantle.common.connector.CommandConnector;
 import net.whimxiqal.mantle.common.connector.CommandRoot;
-import org.bukkit.Bukkit;
-import org.bukkit.command.CommandMap;
-import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.plugin.Plugin;
 
 class PaperCommandRegistrar implements CommandRegistrar {
 
   private final Plugin plugin;
-  private final CommandMap asyncCommandMap;
-  private CommandMap commandMap;
+  private final LegacyComponentSerializer componentSerializer = LegacyComponentSerializer.legacyAmpersand();
 
   public PaperCommandRegistrar(Plugin plugin) {
     this.plugin = plugin;
-    this.asyncCommandMap = new SimpleCommandMap(Bukkit.getServer());
-    Field commandMapField;
-    try {
-      commandMapField = Bukkit.getServer().getClass().getDeclaredField("commandMap");
-    } catch (NoSuchFieldException e) {
-      e.printStackTrace();
-      return;
-    }
-    commandMapField.setAccessible(true);
-    try {
-      commandMap = (CommandMap) commandMapField.get(Bukkit.getServer());
-    } catch (IllegalAccessException e) {
-      e.printStackTrace();
-    }
   }
 
+  @SuppressWarnings("UnstableApiUsage")
   @Override
   public void register(CommandConnector connector) {
-    if (commandMap == null) {
-      throw new RuntimeException("Bukkit commandMap could not be found");
-    }
-    // add to server's existing command map for normal execution
-    for (CommandRoot root : connector.roots()) {
-      PaperMantleCommand command = new PaperMantleCommand(connector, root);
-      commandMap.register(root.baseCommand(), command);
-      for (String alias : root.aliases()) {
-        commandMap.register(alias, plugin.getName().toLowerCase(Locale.ENGLISH), command);
-      }
-    }
-    // add to custom async map for async executions
-    synchronized (asyncCommandMap) {
+    LifecycleEventManager<Plugin> manager = plugin.getLifecycleManager();
+    manager.registerEventHandler(LifecycleEvents.COMMANDS, event -> {
+      final Commands commands = event.registrar();
       for (CommandRoot root : connector.roots()) {
-        PaperMantleCommand asyncCommand = new PaperMantleCommand(connector, root);
-        asyncCommandMap.register(root.baseCommand(), asyncCommand);
-        for (String alias : root.aliases()) {
-          asyncCommandMap.register(alias, plugin.getName().toLowerCase(Locale.ENGLISH), asyncCommand);
-        }
+        commands.register(
+            root.baseCommand(),
+            componentSerializer.serialize(root.description()),
+            root.aliases(),
+            new PaperMantleCommand(connector, root)
+        );
       }
-    }
+    });
   }
 
 }

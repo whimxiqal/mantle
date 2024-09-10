@@ -22,121 +22,29 @@
  * SOFTWARE.
  */
 
-package net.whimxiqal.mantle.common;
+package net.whimxiqal.mantle.crust;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
-import net.whimxiqal.mantle.common.connector.CommandConnector;
-import net.whimxiqal.mantle.common.connector.CommandRoot;
-import net.whimxiqal.mantle.common.connector.IdentifierInfo;
-import net.whimxiqal.mantle.common.parameter.Parameter;
-import net.whimxiqal.mantle.common.parameter.Parameters;
+import net.whimxiqal.mantle.common.CommandResult;
+import net.whimxiqal.mantle.common.CommandSource;
+import net.whimxiqal.mantle.common.Mantle;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static net.whimxiqal.mantle.common.CrustParser.*;
-
 public class MantleTest {
 
-  private static final List<String> COLORS = new LinkedList<>();
-  private static final List<String> COLOR_COMPLETIONS = new LinkedList<>();
-
-  static {
-    COLORS.add("blue");
-    COLOR_COMPLETIONS.add("blue");
-    COLORS.add("green");
-    COLOR_COMPLETIONS.add("green");
-    COLORS.add("red");
-    COLOR_COMPLETIONS.add("red");
-    COLORS.add("canary yellow");
-    COLOR_COMPLETIONS.add("\"canary yellow\"");
-  }
-
-  @BeforeAll
-  static void setUpAll() {
-    Mantle.setProxy(new CrustPlatformProxy());
-    CrustPlugin.instance = new CrustPlugin();
-    CrustPlugin.instance.registerCommand(CommandConnector.builder()
-        .addRoot(CommandRoot.builder("crust").build())
-        .addRoot(CommandRoot.builder("core").build())
-        .lexer(CrustLexer.class)
-        .parser(CrustParser.class)
-        .executor(context -> new CrustBaseVisitor<CommandResult>() {
-          @Override
-          public CommandResult visitRegister(CrustParser.RegisterContext ctx) {
-            String playerName1 = context.identifiers().get(0);
-            String playerName2 = ctx.name.getText();
-            Assertions.assertEquals(playerName1, playerName2);
-            boolean added = CrustPlugin.instance.players.add(playerName1);
-            if (added) {
-              context.source().audience().sendMessage(Component.text("The player was added"));
-              return CommandResult.success();
-            } else {
-              context.source().audience().sendMessage(Component.text("A player already exists with that name"));
-              return CommandResult.failure();
-            }
-          }
-
-          @Override
-          public CommandResult visitUnregister(CrustParser.UnregisterContext ctx) {
-            String playerName1 = context.identifiers().get(Parameters.PLAYER, 0);
-            String playerName2 = ctx.name.getText();
-            Assertions.assertEquals(playerName1, playerName2);
-            boolean removed = CrustPlugin.instance.players.remove(playerName1);
-            if (removed) {
-              context.source().audience().sendMessage(Component.text("The player was removed"));
-              return CommandResult.success();
-            } else {
-              context.source().audience().sendMessage(Component.text("The player could not be removed"));
-              return CommandResult.failure();
-            }
-          }
-
-          @Override
-          public CommandResult visitPlayerEditNickname(CrustParser.PlayerEditNicknameContext ctx) {
-            return CommandResult.success();
-          }
-
-          @Override
-          public CommandResult visitAge(CrustParser.AgeContext ctx) {
-            int age = Integer.parseInt(context.identifiers().get(Parameters.INTEGER, 0));
-            context.source().audience().sendMessage(Component.text("You are " + age + " years old!"));
-            return CommandResult.success();
-          }
-        })
-        .addPermission(RULE_register, "crust.register")
-        .addPermission(RULE_unregister, "crust.unregister")
-        .addPermission(RULE_player, "crust.player")
-        .addPermission(RULE_playerEdit, "crust.player.edit")
-        .identifierInfo(IdentifierInfo.builder(RULE_identifier, IdentifierContext.class)
-            .addParameter(Parameter.builder("color")
-                .options(ctx -> COLORS)
-                .validator(COLORS::contains)
-                .build())
-            .standardExtractor(IdentifierContext::ident)
-            .registerCompletion(RULE_player, 0, Parameters.PLAYER)
-            .registerCompletion(RULE_register, 1, "color")
-            .registerCompletion(RULE_register, 3, Parameters.PLAYER)
-            .registerCompletion(RULE_unregister, 0, Parameters.PLAYER)
-            .registerCompletion(RULE_core, 0, "color")
-            .registerCompletion(RULE_playerEditColor, 0, "color")
-            .registerCompletion(RULE_age, 0, Parameters.INTEGER)
-            .addIgnoredCompletionToken(CrustLexer.SINGLE_QUOTE)
-            .addIgnoredCompletionToken(CrustLexer.DOUBLE_QUOTE)
-            .build())
-        .playerOnlyCommands(RULE_age)
-        .build());
-  }
+  private final CrustState state = new CrustState();
 
   @BeforeEach
   void setUp() {
-    CrustPlugin.instance.players.clear();
+    Mantle.setProxy(new CrustPlatformProxy(state));
+    CrustPlugin.instance = new CrustPlugin();
+    CrustPlugin.instance.registerCommand(CrustConnector.generate(context -> new CrustVisitorImpl(state, context)));
     CrustPlugin.instance.playerRestrictedPermissions.clear();
   }
 
@@ -154,8 +62,8 @@ public class MantleTest {
 
   @Test
   void completeCommand() {
-    CrustPlugin.instance.players.add("PietElite");
-    CrustPlugin.instance.players.add("belkar1");
+    state.players.add("whimxiqal");
+    state.players.add("belkar1");
 
     CommandSource source = new CommandSource(CommandSource.Type.CONSOLE, null, new TestAudience());
     List<String> completions;
@@ -179,18 +87,18 @@ public class MantleTest {
     Assertions.assertTrue(completions.contains("player"));
 
     completions = instance().completeCommand(source, "crust player ");
-    Assertions.assertEquals(CrustPlugin.instance.players.size(), completions.size());
-    for (String player : CrustPlugin.instance.players) {
+    Assertions.assertEquals(state.players.size(), completions.size());
+    for (String player : state.players) {
       Assertions.assertTrue(completions.contains(player));
     }
 
-    completions = instance().completeCommand(source, "crust player p");
+    completions = instance().completeCommand(source, "crust player w");
     Assertions.assertEquals(1, completions.size());
-    Assertions.assertTrue(completions.contains("PietElite"));
+    Assertions.assertTrue(completions.contains("whimxiqal"));
 
-    completions = instance().completeCommand(source, "crust player P");
+    completions = instance().completeCommand(source, "crust player W");
     Assertions.assertEquals(1, completions.size());
-    Assertions.assertTrue(completions.contains("PietElite"));
+    Assertions.assertTrue(completions.contains("whimxiqal"));
 
     completions = instance().completeCommand(source, "crust player golem ");
     Assertions.assertEquals(2, completions.size(), completions.toString());
@@ -201,20 +109,20 @@ public class MantleTest {
     Assertions.assertEquals(0, completions.size());
 
     completions = instance().completeCommand(source, "crust register tornado ");
-    Assertions.assertEquals(COLORS.size(), completions.size());
-    for (String color : COLOR_COMPLETIONS) {
+    Assertions.assertEquals(CrustConnector.COLOR_COMPLETIONS.length, completions.size());
+    for (String color : CrustConnector.COLOR_COMPLETIONS) {
       Assertions.assertTrue(completions.contains(color));
     }
 
     completions = instance().completeCommand(source, "crust register a b c ");
-    Assertions.assertEquals(CrustPlugin.instance.players.size(), completions.size());
-    for (String player : CrustPlugin.instance.players) {
+    Assertions.assertEquals(state.players.size(), completions.size());
+    for (String player : state.players) {
       Assertions.assertTrue(completions.contains(player));
     }
 
     completions = instance().completeCommand(source, "crust player name edit color ");
-    Assertions.assertEquals(COLORS.size(), completions.size());
-    for (String color : COLOR_COMPLETIONS) {
+    Assertions.assertEquals(CrustConnector.COLOR_COMPLETIONS.length, completions.size());
+    for (String color : CrustConnector.COLOR_COMPLETIONS) {
       Assertions.assertTrue(completions.contains(color));
     }
 
@@ -231,8 +139,8 @@ public class MantleTest {
   void completeCoreCommand() {
     CommandSource source = new CommandSource(CommandSource.Type.CONSOLE, null, new TestAudience());
     List<String> completions = instance().completeCommand(source, "core ");
-    Assertions.assertEquals(COLORS.size(), completions.size());
-    for (String color : COLOR_COMPLETIONS) {
+    Assertions.assertEquals(CrustConnector.COLOR_COMPLETIONS.length, completions.size());
+    for (String color : CrustConnector.COLOR_COMPLETIONS) {
       Assertions.assertTrue(completions.contains(color));
     }
   }
@@ -256,7 +164,7 @@ public class MantleTest {
   @Test
   void processCommand() {
     CommandSource source = new CommandSource(CommandSource.Type.CONSOLE, null, new TestAudience());
-    Set<String> players = CrustPlugin.instance.players;
+    Set<String> players = state.players;
     players.clear();
     assertSuccess(instance().executeCommand(source, "crust register apollo"));
     Assertions.assertEquals(1, players.size());
@@ -276,7 +184,7 @@ public class MantleTest {
   void processCommandWithPermissions() {
     UUID playerUuid = UUID.randomUUID();
     CommandSource source = new CommandSource(CommandSource.Type.PLAYER, playerUuid, new TestAudience());
-    Set<String> hosts = CrustPlugin.instance.players;
+    Set<String> hosts = state.players;
     // starts with two
 
     assertSuccess(instance().executeCommand(source, "crust register ares"));

@@ -1,10 +1,8 @@
 # Mantle
 
-![Test and Build](https://github.com/whimxiqal/mantle/actions/workflows/build.yml/badge.svg)
-[![Checkstyle](https://github.com/whimxiqal/mantle/actions/workflows/checkstyle.yml/badge.svg)](https://checkstyle.org/)
-[![CodeQL](https://github.com/whimxiqal/mantle/actions/workflows/codeql.yml/badge.svg)](https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/about-code-scanning)
+![Test + Build](https://github.com/whimxiqal/mantle/actions/workflows/build.yml/badge.svg)
 ![License](https://img.shields.io/github/license/whimxiqal/mantle)
-![Maven Central](https://img.shields.io/maven-central/v/net.whimxiqal.mantle/common)
+![Maven Central](https://img.shields.io/maven-central/v/net.whimxiqal.mantle/common?color=green)
 
 Mantle is a [Minecraft](https://www.minecraft.net) Command Framework that leverages [ANTLR4](https://github.com/antlr/antlr4) to automatically generate necessary command executor files, cutting down total code and vastly improving maintainability.
 

@@ -34,10 +34,21 @@ import net.whimxiqal.mantle.common.CommandContext;
 @FunctionalInterface
 public interface ParameterOptions {
 
+  /**
+   * A supplier that returns an empty list.
+   *
+   * @return nothing
+   */
   static ParameterOptions empty() {
     return ctx -> Collections.emptyList();
   }
 
+  /**
+   * Get the allowed options given a certain command context.
+   *
+   * @param ctx the context
+   * @return the allowed options
+   */
   Collection<String> get(CommandContext ctx);
 
 }

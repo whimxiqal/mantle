@@ -22,11 +22,51 @@
  * SOFTWARE.
  */
 
-package net.whimxiqal.mantle.common;
+package net.whimxiqal.mantle.crust;
 
-public class TestLogger implements Logger {
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.UUID;
+import net.whimxiqal.mantle.common.Logger;
+import net.whimxiqal.mantle.common.Proxy;
+
+public class CrustPlatformProxy implements Proxy {
+
+  private final CrustState state;
+
+  public CrustPlatformProxy(CrustState state) {
+    this.state = state;
+  }
+
   @Override
-  public void error(String message) {
-    System.out.println("ERROR: " + message);
+  public Logger logger() {
+    return new TestLogger();
+  }
+
+  @Override
+  public boolean hasPermission(UUID playerUuid, String permission) {
+    return !CrustPlugin.instance.playerRestrictedPermissions.containsKey(playerUuid) ||
+        !CrustPlugin.instance.playerRestrictedPermissions.get(playerUuid).contains(permission);
+  }
+
+  @Override
+  public List<String> onlinePlayerNames() {
+    return new LinkedList<>(state.players);
+  }
+
+  @Override
+  public boolean isOnlinePlayer(String candidate) {
+    return state.players.contains(candidate);
+  }
+
+  @Override
+  public List<String> worldNames() {
+    return Collections.emptyList();
+  }
+
+  @Override
+  public boolean isWorldName(String candidate) {
+    return false;
   }
 }

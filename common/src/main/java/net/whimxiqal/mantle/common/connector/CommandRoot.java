@@ -32,6 +32,12 @@ import net.kyori.adventure.text.Component;
  */
 public interface CommandRoot {
 
+  /**
+   * Create a builder.
+   *
+   * @param baseCommand the base command (ex. "/home" would have a base command "home")
+   * @return the builder, for chaining
+   */
   static CommandRootBuilder builder(String baseCommand) {
     return new CommandRootBuilder(baseCommand);
   }

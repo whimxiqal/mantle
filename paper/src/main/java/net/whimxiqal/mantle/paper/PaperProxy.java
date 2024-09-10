@@ -34,10 +34,17 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 class PaperProxy implements Proxy {
 
-  private final Logger logger = new PaperLogger();
+  private final Logger logger;
+
+  PaperProxy(Plugin plugin) {
+    java.util.logging.Logger baseLogger = java.util.logging.Logger.getLogger("Mantle");
+    baseLogger.setParent(plugin.getLogger());
+    this.logger = new PaperLogger(baseLogger);
+  }
 
   @Override
   public Logger logger() {

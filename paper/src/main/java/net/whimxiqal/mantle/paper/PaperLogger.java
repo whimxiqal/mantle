@@ -25,11 +25,17 @@
 package net.whimxiqal.mantle.paper;
 
 import net.whimxiqal.mantle.common.Logger;
-import org.bukkit.Bukkit;
 
 class PaperLogger implements Logger {
+
+  java.util.logging.Logger base;
+
+  PaperLogger(java.util.logging.Logger base) {
+    this.base = base;
+  }
+
   @Override
   public void error(String message) {
-    Bukkit.getLogger().severe(message);
+    base.severe(message);
   }
 }

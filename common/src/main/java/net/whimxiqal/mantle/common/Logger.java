@@ -29,8 +29,11 @@ package net.whimxiqal.mantle.common;
  */
 public interface Logger {
 
-  default void error(String message) {
-    System.out.println("[ERROR]: " + message);
-  }
+  /**
+   * Log an error message.
+   *
+   * @param message the message
+   */
+  void error(String message);
 
 }

@@ -47,11 +47,23 @@ public class CommandRootBuilder implements Builder<CommandRoot> {
     return new CommandRootImpl(baseCommand, description, aliases);
   }
 
+  /**
+   * Set a description for this command.
+   *
+   * @param description the description
+   * @return the builder, for chaining
+   */
   public CommandRootBuilder description(Component description) {
     this.description = description;
     return this;
   }
 
+  /**
+   * Add an alias for this command. You may add multiple.
+   *
+   * @param alias the alias
+   * @return the builder, for chaining
+   */
   public CommandRootBuilder addAlias(String alias) {
     this.aliases.add(alias);
     return this;

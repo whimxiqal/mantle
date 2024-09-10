@@ -64,11 +64,22 @@ public class MantleCommand {
     this.root = commandRoot;
   }
 
+  /**
+   * Get the connector with the information about the ANTLR generated files.
+   *
+   * @return the connector
+   */
   public CommandConnector getConnector() {
     return connector;
   }
 
-  @SuppressWarnings("checkstyle:MissingJavadocMethod")
+  /**
+   * Process a command.
+   *
+   * @param source        the command source, the one executing the command
+   * @param justArguments just the arguments of the command (without the base command)
+   * @return the result of the command executing
+   */
   public final CommandResult process(CommandSource source, String justArguments) {
     String arguments = root.baseCommand() + " " + justArguments;
 
@@ -107,7 +118,13 @@ public class MantleCommand {
     return result;
   }
 
-  @SuppressWarnings("checkstyle:MissingJavadocMethod")
+  /**
+   * Complete a command and give a set of suggestions that could complete the given arguments.
+   *
+   * @param source        the command source, the one executing the command
+   * @param justArguments just the arguments of the command (without the base command)
+   * @return the list of suggestions
+   */
   public final synchronized List<String> complete(CommandSource source, String justArguments) {
     String arguments = root.baseCommand() + " " + justArguments;
     final boolean argumentsEndInWhitespace = Character.isWhitespace(arguments.charAt(arguments.length() - 1));

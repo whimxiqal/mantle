@@ -26,6 +26,7 @@ package net.whimxiqal.mantle.common;
 
 import java.util.UUID;
 import net.kyori.adventure.audience.Audience;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The source of a command.
@@ -42,18 +43,40 @@ public final class CommandSource {
     this.audience = audience;
   }
 
+  /**
+   * An unknown command source. This really shouldn't be used.
+   *
+   * @return the command source
+   */
   public static CommandSource unknown() {
     return new CommandSource(Type.UNKNOWN, null, Audience.empty());
   }
 
+  /**
+   * The type of command source.
+   *
+   * @return the type
+   */
   public Type type() {
     return type;
   }
 
+  /**
+   * The unique identifier of this command source.
+   * Depending on the source type, this may be null.
+   *
+   * @return the uuid
+   */
+  @Nullable
   public UUID uuid() {
     return uuid;
   }
 
+  /**
+   * The audience representing this command source.
+   *
+   * @return the audience
+   */
   public Audience audience() {
     return audience;
   }

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package net.whimxiqal.mantle.common;
+package net.whimxiqal.mantle.crust;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,6 +30,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import net.whimxiqal.mantle.common.CommandResult;
+import net.whimxiqal.mantle.common.CommandSource;
+import net.whimxiqal.mantle.common.MantleCommand;
 import net.whimxiqal.mantle.common.connector.CommandConnector;
 import net.whimxiqal.mantle.common.connector.CommandRoot;
 
@@ -37,7 +40,6 @@ public class CrustPlugin {
 
   public static CrustPlugin instance;
   private final Map<String, MantleCommand> commands = new HashMap<>();
-  public final Set<String> players = new HashSet<>();
   public final Map<UUID, Set<String>> playerRestrictedPermissions = new HashMap<>();
 
   public void registerCommand(CommandConnector connector) {

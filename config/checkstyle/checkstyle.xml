@@ -20,6 +20,7 @@
 
     <property name="fileExtensions" value="java, properties, xml"/>
     <!-- Excludes all 'module-info.java' files              -->
+    <!-- and any src files that are not from the root src folder -->
     <!-- See https://checkstyle.org/config_filefilters.html -->
     <module name="BeforeExecutionExclusionFileFilter">
         <property name="fileNamePattern" value="(module\-info\.java$)|(.*[\\/]src[\\/]test[\\/].*$)"/>
@@ -320,8 +321,7 @@
         </module>
         <module name="MissingJavadocMethod">
             <property name="scope" value="public"/>
-            <property name="minLineCount" value="2"/>
-            <property name="allowedAnnotations" value="Override, Test"/>
+            <property name="allowedAnnotations" value="Override, Test, ApiStatus.Internal"/>
             <property name="tokens" value="METHOD_DEF, ANNOTATION_FIELD_DEF"/>
         </module>
         <module name="MissingJavadocType">

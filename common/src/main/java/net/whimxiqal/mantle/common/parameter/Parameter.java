@@ -31,15 +31,43 @@ import net.kyori.adventure.text.Component;
  */
 public interface Parameter {
 
+  /**
+   * Create a builder.
+   *
+   * @param name the name of this parameter
+   * @return the builder
+   */
   static ParameterBuilder builder(String name) {
     return new ParameterBuilder(name);
   }
 
+  /**
+   * The name of this parameter.
+   *
+   * @return the name
+   */
   String name();
 
+  /**
+   * The supplier of options that a given command context would allow
+   * for a given instance of this parameter.
+   *
+   * @return the options
+   */
   ParameterOptions options();
 
+  /**
+   * True if the value is a valid option for this parameter.
+   *
+   * @param candidate the option
+   * @return true if valid
+   */
   boolean isValid(String candidate);
 
+  /**
+   * The message to send if the given option is invalid.
+   *
+   * @return the message
+   */
   Component invalidMessage();
 }

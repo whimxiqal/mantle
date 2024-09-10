@@ -1,5 +1,6 @@
 rootProject.name = 'mantle'
 include 'common'
+include 'crust'
 include 'sponge7'
 include 'sponge8'
 include 'sponge9'
